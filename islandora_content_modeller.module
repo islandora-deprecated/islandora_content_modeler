@@ -3,63 +3,63 @@
 
 
 
-function islandora_content_modeller_menu()
+function islandora_content_modeler_menu()
 {
 
   $items=array();
   
-  $items['admin/content/modeller'] = array(
+  $items['admin/content/modeler'] = array(
        'title' => 'Islandora Content Modeller',
        'description' => 'Manage Islandora/Fedora Content Models',
-       'page callback' => 'islandora_content_modeller_main',
+       'page callback' => 'islandora_content_modeler_main',
        'access arguments' => array('administer site configuration'),
          'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/content/modeller/ajax/listModels'] = array(
+  $items['admin/content/modeler/ajax/listModels'] = array(
     'page callback' => 'icm_ajax_model_list',
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK
   );
 
-  $items['admin/content/modeller/ajax/getFiles'] = array(
+  $items['admin/content/modeler/ajax/getFiles'] = array(
     'page callback' => 'icm_ajax_pluginFiles',
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK
   );
   
-  $items['admin/content/modeller/ajax/getClasses'] = array(
+  $items['admin/content/modeler/ajax/getClasses'] = array(
     'page callback' => 'icm_ajax_getClasses',
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK
   );
   
-  $items['admin/content/modeller/ajax/getMethods'] = array(
+  $items['admin/content/modeler/ajax/getMethods'] = array(
     'page callback' => 'icm_ajax_getMethods',
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK
   );
     
-  $items['admin/content/modeller/ajax/button'] = array(
+  $items['admin/content/modeler/ajax/button'] = array(
       'page callback' => 'icm_ajax_button',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK
   );
 
-  $items['admin/content/modeller/ajax/processForm/%'] = array(
+  $items['admin/content/modeler/ajax/processForm/%'] = array(
       'page callback' => 'icm_ajax_processForm',
       'page arguments' => array(5),
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK
   );
 
-  $items['admin/content/modeller/ajax/model'] = array(
+  $items['admin/content/modeler/ajax/model'] = array(
       'page callback' => 'icm_ajax_model_tree',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK
   );
 
-  $items['admin/content/modeller/ajax/collection'] = array(
+  $items['admin/content/modeler/ajax/collection'] = array(
       'page callback' => 'icm_ajax_collection_tree',
       'access arguments' => array('administer site configuration'),
       'type' => MENU_CALLBACK
@@ -175,7 +175,7 @@ function icm_ajax_getMethods()
 function icm_ajax_model_list()
 {
     global $base_url;
-    $moduleRoot=drupal_get_path('module','islandora_content_modeller');
+    $moduleRoot=drupal_get_path('module','islandora_content_modeler');
     require_once($moduleRoot.'/treeview.inc');
 
     $moduleRoot = $base_url.'/'.$moduleRoot;   
@@ -214,7 +214,7 @@ function icm_ajax_model_tree()
 {
   global $base_url;
   $ret =false;
-  $moduleRoot=drupal_get_path('module','islandora_content_modeller');
+  $moduleRoot=drupal_get_path('module','islandora_content_modeler');
   require_once($moduleRoot.'/treeview.inc');
   $moduleRoot=$base_url.'/'.$moduleRoot;
 
@@ -412,7 +412,7 @@ function icm_ajax_collection_tree()
 {
   global $base_url;
   $ret =false;
-  $moduleRoot=drupal_get_path('module','islandora_content_modeller');
+  $moduleRoot=drupal_get_path('module','islandora_content_modeler');
   require_once($moduleRoot.'/treeview.inc');
   $moduleRoot=$base_url.'/'.$moduleRoot;  
 
@@ -517,18 +517,18 @@ function icm_ajax_collection_tree()
 }
 
 
-function islandora_content_modeller_main()
+function islandora_content_modeler_main()
 {
   global $base_url;
-  $moduleRoot=drupal_get_path('module','islandora_content_modeller');
+  $moduleRoot=drupal_get_path('module','islandora_content_modeler');
   drupal_add_css($moduleRoot.'/css/jquery.treeview.css');
-  drupal_add_css($moduleRoot.'/css/content_modeller.css');
+  drupal_add_css($moduleRoot.'/css/content_modeler.css');
   drupal_add_css($moduleRoot.'/css/jquery.jnotify.css');
   drupal_add_css($moduleRoot.'/css/smoothness/jquery-ui-1.8.1.custom.css');
 
   drupal_add_js($moduleRoot.'/js/jquery.cookie.js');
   drupal_add_js($moduleRoot.'/js/jquery.treeview.min.js');
-  drupal_add_js($moduleRoot.'/js/content_modeller.js');
+  drupal_add_js($moduleRoot.'/js/content_modeler.js');
   drupal_add_js($moduleRoot.'/js/jquery.jnotify.js');
   
   $moduleRoot = $base_url.'/'.$moduleRoot; 
@@ -565,7 +565,7 @@ function icm_ajax_processForm($formName)
     $params=preg_split('/\s+/',trim($_GET['formReq']));
   }
 
-  // require_once(drupal_get_path('module','islandora_content_modeller').'/ajaxForms.inc');
+  // require_once(drupal_get_path('module','islandora_content_modeler').'/ajaxForms.inc');
   if (icm_ajax_formExists($formName))
   {
 

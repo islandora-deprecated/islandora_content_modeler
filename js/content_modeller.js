@@ -54,7 +54,7 @@ $(document).ready(function () {
 	  function handleForm()
       {
 	      $('#edit-form-module').change(function () {
-	          $.get('modeller/ajax/getFiles/', { module: $('#edit-form-module').val() }, function (data) {
+	          $.get('modeler/ajax/getFiles/', { module: $('#edit-form-module').val() }, function (data) {
 	              $('#edit-form-filename-select').html(data);
 	          });
 	          $('#edit-form-class-select, #edit-form-method-select, #edit-form-handler-select').html('');
@@ -64,7 +64,7 @@ $(document).ready(function () {
 	      $('.form-item #edit-form-filename').before('<select id="edit-form-filename-select"></select>');
 	      $('#edit-form-filename-select').change(function () {
 	    	 $('#edit-form-filename').val($('#edit-form-filename-select').val()); 
-	    	 $.get('modeller/ajax/getClasses/', { module: $('#edit-form-module').val(), 
+	    	 $.get('modeler/ajax/getClasses/', { module: $('#edit-form-module').val(), 
 						      file: $('#edit-form-filename').val(), 
 						      className:  $('#edit-form-class').val() }, 
 		       function (data) { $('#edit-form-class-select').html(data); });	    	 
@@ -75,7 +75,7 @@ $(document).ready(function () {
 	      $('.form-item #edit-form-class').before('<select id="edit-form-class-select"></select>');
 	      $('#edit-form-class-select').change(function () {
 	    	 $('#edit-form-class').val($('#edit-form-class-select').val()); 
-	    	 $.get('modeller/ajax/getMethods/', { module: $('#edit-form-module').val(),
+	    	 $.get('modeler/ajax/getMethods/', { module: $('#edit-form-module').val(),
 						      file: $('#edit-form-filename').val(), 
 						      className:  $('#edit-form-class').val() }, 
 		       function (data) {
@@ -86,10 +86,10 @@ $(document).ready(function () {
 
 	      if ($('#edit-form-file').val() || $('#edit-form-class').val() || $('#edit-form-filename').val())
 	      {
-		      $.get('modeller/ajax/getFiles/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val() }, function (data) { 
+		      $.get('modeler/ajax/getFiles/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val() }, function (data) { 
 			  $('#edit-form-filename-select').html(data);
 		      });
-		      $.get('modeller/ajax/getClasses/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val(), className: $('#edit-form-class').val() }, function (data) {
+		      $.get('modeler/ajax/getClasses/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val(), className: $('#edit-form-class').val() }, function (data) {
 			  $('#edit-form-class-select').html(data);
 		      });
 	      }		  
@@ -107,10 +107,10 @@ $(document).ready(function () {
 	      
 	      if ( $('#edit-form-class').val())
     	  {
-	          $.get('modeller/ajax/getMethods/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val(), className: $('#edit-form-class').val(), method: $('#edit-form-method').val() }, function (data) {
+	          $.get('modeler/ajax/getMethods/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val(), className: $('#edit-form-class').val(), method: $('#edit-form-method').val() }, function (data) {
 	              $('#edit-form-method-select').html(data);
 	          });
-	          $.get('modeller/ajax/getMethods/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val(), className: $('#edit-form-class').val(), method: $('#edit-form-handler').val() }, function (data) {
+	          $.get('modeler/ajax/getMethods/', { module: $('#edit-form-module').val(), file: $('#edit-form-filename').val(), className: $('#edit-form-class').val(), method: $('#edit-form-handler').val() }, function (data) {
 	              $('#edit-form-handler-select').html(data);
 	          });	          
     	  }	
@@ -149,7 +149,7 @@ $(document).ready(function () {
 	  {
 		  $('.ajaxButtonIcon').unbind();
 		  $('.ajaxButtonIcon').click(function () {
-		    	$.get('modeller/ajax/button', { formReq: this.id}, function (data) {
+		    	$.get('modeler/ajax/button', { formReq: this.id}, function (data) {
 			  		lines = data.split(':');
 						if (lines.shift() == 'success')
 						{
@@ -174,7 +174,7 @@ $(document).ready(function () {
 		    $('.ajaxFormIcon').click(function () {
 		    	var params=this.id.split(' ');
 		    	var formName=params.shift();
-		    	$.get('modeller/ajax/processForm/'+formName, { formReq: params.join(' ')}, function (data) {
+		    	$.get('modeler/ajax/processForm/'+formName, { formReq: params.join(' ')}, function (data) {
 		    		if (data == '')
 	    			{
 	    			   $('#Notification').jnotifyAddMessage({text: 'Error: Unable to load requested form <b>\''+formName+'\'</b>.', permanent: false, type: 'error'});    
@@ -190,7 +190,7 @@ $(document).ready(function () {
 	  }
 
       function updateModelList() {
-		  $.get('modeller/ajax/listModels' , function (j) { 
+		  $.get('modeler/ajax/listModels' , function (j) { 
 		    $('#model_tree').html(j);
 		    $('#model_tree ul').treeview({ animated: "fast",
 		      collapsed: true,
@@ -212,7 +212,7 @@ $(document).ready(function () {
       }	  
 	  
       function updateModelTree() {
-		  $.get('modeller/ajax/model', { model_pid: model} , function (j) { 
+		  $.get('modeler/ajax/model', { model_pid: model} , function (j) { 
 		    $('#model_tree').html(j);
 		    $('#model_tree ul').treeview({ animated: "fast",
 		      collapsed: true,
@@ -231,7 +231,7 @@ $(document).ready(function () {
 		if (collection_pid == 'Root')
 		  collection_pid = false;
 
-		$.get('modeller/ajax/collection', { collection_pid: collection_pid} , function (j) { 
+		$.get('modeler/ajax/collection', { collection_pid: collection_pid} , function (j) { 
 			updateBreadcrumbs();	
 			
 			$('#collection_tree').html(j);
