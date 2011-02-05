@@ -47,7 +47,7 @@ class treeview {
       
     return $ret;
   }
-  
+
   function addChild($content, $type = 'file', $icons = NULL, $id = NULL) {
     $tree = (is_object($content) && get_class($content) == 'treeview') ? $content : new treeview($content, $type, $icons, $id);
     $this->children[] = $tree;

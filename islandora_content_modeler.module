@@ -346,95 +346,9 @@ function icm_ajax_model_tree() {
 }
 
 function icm_ajax_collection_tree() {
-  global $base_url;
-  $ret = false;
-  $moduleRoot = drupal_get_path('module', 'islandora_content_modeler');
-  require_once($moduleRoot . '/treeview.inc');
-  $moduleRoot = $base_url . '/' . $moduleRoot;
-
-  module_load_include('inc', 'fedora_repository', 'ContentModel');
-  module_load_include('inc', 'fedora_repository', 'CollectionPolicy');
-  module_load_include('inc', 'fedora_repository', 'CollectionClass');
-
-  $collectionHelper = new CollectionClass();
-
-  $pid = (!isset($_GET['collection_pid']) || strtolower($_GET['collection_pid']) == 'false') ? variable_get('fedora_repository_pid', 'islandora:top') : trim($_GET['collection_pid']);
-  $cm = ContentModel::loadFromObject($pid);
-  $cp = CollectionPolicy::loadFromCollection($pid);
-
-  $cssPid = $pid; //str_replace(':','_',$pid);
-
-  if ($cm !== false && $cp !== false) {
-    $cmValid = $cm->validate();
-    $cpValid = $cp->validate();
-
-    $collectionTree = new treeview($pid . ($cpValid ? '' : '!') . ' (' . $cm->pid . ($cmValid ? '' : '!') . ')', 'folder', ' <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_collection_edit ' . $cp->pid . '"/> <img src="' . $moduleRoot . '/images/red_info.png" class="ajaxFormIcon" id="icm_collection_rollback ' . $cp->pid . '"/>  <img src="' . $moduleRoot . '/images/view.gif" class="ajaxFormIcon" id="icm_display_rawXml collection ' . $cp->pid . '"/>', 'collections');
-
-    if (!$cmValid || !$cpValid) {
-      //        echo '<pre>'.htmlentities($cm->dumpXml()).'</pre>';
-      $errorsEl = $collectionTree->addChild('XML Errors', 'folder');
-
-      foreach (ContentModel::$errors as $err) {
-        $errorsEl->addChild('<b><font color="red">' . $err . '</font></b>');
-      }
-      foreach (CollectionPolicy::$errors as $err) {
-        $errorsEl->addChild('<b><font color="red">' . $err . '</font></b>');
-      }
-    }
-    else {
-
-      $childrenAllowed = false;
-      $contentModels = $cp->getContentModels();
-      $cm_tree = $collectionTree->addChild('Allowed Content Models', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_collection_add_cmodel ' . $cssPid . '"/>', $cssPid . '-cmodels');
-      foreach ($contentModels as $ccm) {
-        if ($ccm->pid == variable_get('fedora_collection_model_pid', 'islandora:collectionCModel')) {
-          $childrenAllowed = true;
-        }
-
-        $cm_tree->addChild($ccm->name . ' (<a href="#" class="collection_model" id="' . $ccm->pid . '">' . $ccm->pid . '</a>)', 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_collection_remove_cmodel ' . $cssPid . ' ' . $ccm->pid . '"/>');
-      }
-
-      $dstreams = $cm->listDatastreams();
-      if (count($dstreams) > 0) {
-        $ds_tree = $collectionTree->addChild('Datastreams', 'folder', null, $cssPid . '-dstreams');
-        foreach ($dstreams as $ds)
-          $ds_tree->addChild($ds);
-      }
-
-      $terms = $cp->getSearchTerms(true);
-      $search_tree = $collectionTree->addChild('Search Terms', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_collection_add_term ' . $cssPid . '"/>', $cssPid . '-terms');
-      if (count($terms) > 0) {
-        foreach ($terms as $term) {
-          $search_tree->addChild(($term['default'] ? '<b>' : '') . $term['value'] . ' (' . $term['field'] . ')' . ($term['default'] ? '</b>' : ''), 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_collection_remove_term ' . $cssPid . ' ' . $term['field'] . '" alt="Remove"/> <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxButtonIcon" id="icm_collection_default_term ' . $cssPid . ' ' . $term['field'] . '" alt="Set as Default"/> ');
-        }
-      }
-
-      if ($childrenAllowed) {
-        $items = new SimpleXMLElement($collectionHelper->getRelatedItems($pid, null, null));
-        $child_tree = new TreeView('Child Collections', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_collection_new ' . $cssPid . '"/>', $cssPid . '-children');
-
-        if (count($items->results->result) > 0) {
-          foreach ($items->results->result as $res) {
-            $child_pid = substr($res->object['uri'], strpos($res->object['uri'], '/') + 1);
-            $model_pid = substr($res->content['uri'], strpos($res->content['uri'], '/') + 1);
-
-            $child_cp = CollectionPolicy::loadFromCollection($child_pid);
-            if ($child_cp !== false) {
-              $child_tree->addChild('<a href="#" class="collection_child" id="' . $child_pid . '">' . $child_pid . '</a> (<a href="#" class="collection_model" id="' . $model_pid . '">' . $model_pid . '</a>)', 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxFormIcon" id="icm_collection_purge ' . $child_pid . '"/>');
-            }
-          }
-        }
-        $collectionTree->addChild($child_tree);
-      }
-    }
-    $ret = $collectionTree->buildTree('filetree');
-  }
-
-  if ($ret !== false) {
-    echo $ret;
-  } else
-    echo t('Error: Missing content model and/or collection policy datastream(s) for  ' . $pid);
-
+  module_load_include('inc', 'islandora_content_modeler', 'includes/CollectionsTree');
+  $collections_tree = new CollectionsTree();
+  $collections_tree->renderBranches();
   exit();
 }
 
