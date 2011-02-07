@@ -101,13 +101,10 @@ class CollectionsTree {
   /**
    * ...
    *
-   * @global String $base_url
    * @return String
    *   ...
    */
-  private function getTitleIcon() {
-    global $base_url;
-    $module_root = $base_url . '/' . drupal_get_path('module', 'islandora_content_modeler');
+  private function getTitleIcons() {
     $icon = ' '. create_icon(Image::Edit, AjaxAction::Form, 'icm_collection_edit', array($this->collectionPolicy->pid));
     $icon .= create_icon(Image::Info, AjaxAction::Form, 'icm_collection_rollback', array($this->collectionPolicy->pid));
     $icon .= create_icon(Image::View, AjaxAction::Form, 'icm_display_rawXml', array($this->collectionPolicy->pid));
@@ -145,7 +142,7 @@ class CollectionsTree {
     module_load_include('inc', 'islandora_content_modeler', 'treeview');
 
     // Add Root Element.
-    $collection_tree = new treeview($this->getTitle(), 'folder', $this->getTitleIcon(), 'collections');
+    $collection_tree = new treeview($this->getTitle(), 'folder', $this->getTitleIcons(), 'collections');
 
     // Error Occured report and abort.
     if (!$this->contentModelAndCollectionPolicyIsValid()) {

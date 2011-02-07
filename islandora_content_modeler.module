@@ -181,6 +181,11 @@ function icm_ajax_model_list() {
 }
 
 function icm_ajax_model_tree() {
+  module_load_include('inc', 'islandora_content_modeler', 'includes/ModelsTree');
+  $collections_tree = new ModelsTree();
+  $collections_tree->renderBranches();
+  exit();
+  /*
   global $base_url;
   $ret = false;
   $moduleRoot = drupal_get_path('module', 'islandora_content_modeler');
@@ -342,7 +347,7 @@ function icm_ajax_model_tree() {
   } else
     echo t('Error: Unable to load content model');
 
-  exit();
+  exit();*/
 }
 
 function icm_ajax_collection_tree() {

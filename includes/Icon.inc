@@ -24,6 +24,8 @@ class Image {
   const Edit = 'edit.gif';
   const Info = 'red_info.png';
   const View = 'view.gif';
+  const Up = 'blue_up.png';
+  const Down = 'blue_down.png';
 }
 
 /**
