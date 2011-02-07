@@ -58,6 +58,8 @@ class AjaxAction {
  * @return String
  *   A String
  */
-function create_icon($icon, $ajax_action, $callback, $arguments) {
-  return '<img src="' . CONTENT_MODELER_ROOT . '/images/' . $icon . '" class="' . $ajax_action . '" id="' . $callback . ' ' . implode(' ', $arguments) . '"/>';
+function create_icon($icon, $ajax_action, $callback, $arguments = NULL) {
+  $arguments = is_array($arguments) ? implode(' ', $arguments) : '';
+  $root = CONTENT_MODELER_ROOT;
+  return " <img src='$root/images/$icon' class='$ajax_action' id='$callback $arguments'/>";
 }

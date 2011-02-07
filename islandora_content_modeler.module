@@ -13,9 +13,10 @@ function islandora_content_modeler_menu() {
   );
 
   $items['admin/content/modeler/ajax/listModels'] = array(
-    'page callback' => 'icm_ajax_model_list',
+    'page callback' => 'ModelsTree::renderListOfInstalledContentModels',
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/ModelsTree.inc'
   );
 
   $items['admin/content/modeler/ajax/getFiles'] = array(
@@ -50,15 +51,17 @@ function islandora_content_modeler_menu() {
   );
 
   $items['admin/content/modeler/ajax/model'] = array(
-    'page callback' => 'icm_ajax_model_tree',
+    'page callback' => 'ModelsTree::renderContentModel',
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/ModelsTree.inc'
   );
 
   $items['admin/content/modeler/ajax/collection'] = array(
-    'page callback' => 'icm_ajax_collection_tree',
+    'page callback' => 'CollectionsTree::renderCollection',
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/CollectionsTree.inc'
   );
 
   return $items;
@@ -147,216 +150,6 @@ function icm_ajax_getMethods() {
   exit();
 }
 
-function icm_ajax_model_list() {
-  global $base_url;
-  $moduleRoot = drupal_get_path('module', 'islandora_content_modeler');
-  require_once($moduleRoot . '/treeview.inc');
-
-  $moduleRoot = $base_url . '/' . $moduleRoot;
-
-  module_load_include('inc', 'fedora_repository', 'ContentModel');
-  module_load_include('inc', 'fedora_repository', 'CollectionClass');
-
-  $modelTree = new treeview('Installed Content Models', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_new"/>', 'models');
-
-  $collectionHelper = new CollectionClass();
-  $items = new SimpleXMLElement($collectionHelper->getRelatedItems(variable_get('fedora_content_model_collection_pid', 'islandora:ContentModelCollection'), null, null));
-  $modelCount = 0;
-  if (count($items->results->result) > 0) {
-
-    foreach ($items->results->result as $res) {
-      $child_pid = substr($res->object['uri'], strpos($res->object['uri'], '/') + 1);
-
-      if (($cm = ContentModel::loadFromModel($child_pid)) !== false) {
-        $modelTree->addChild('<a href="#" class="list_model" id="' . $child_pid . '">' . $child_pid . '</a>', 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxFormIcon" id="icm_model_purge ' . $child_pid . '"/>');
-        $modelCount++;
-      }
-    }
-  }
-  if ($modelCount == 0) {
-    $modelTree->addChild(t('No installed content models found.'));
-  }
-
-  echo $modelTree->buildTree('filetree');
-}
-
-function icm_ajax_model_tree() {
-  module_load_include('inc', 'islandora_content_modeler', 'includes/ModelsTree');
-  $collections_tree = new ModelsTree();
-  $collections_tree->renderBranches();
-  exit();
-  /*
-  global $base_url;
-  $ret = false;
-  $moduleRoot = drupal_get_path('module', 'islandora_content_modeler');
-  require_once($moduleRoot . '/treeview.inc');
-  $moduleRoot = $base_url . '/' . $moduleRoot;
-
-  module_load_include('inc', 'fedora_repository', 'ContentModel');
-
-  if (isset($_GET['model_pid'])) {
-    $cm = ContentModel::loadFromModel(trim($_GET['model_pid']));
-  } else
-    $cm = ContentModel::loadFromObject(variable_get('fedora_repository_pid', 'islandora:top'));
-
-  if ($cm !== false) {
-    $cmValid = $cm->validate();
-
-    $modelTree = new treeview($cm->pid . ($cmValid ? '' : '!'), 'folder', ' <img src="' . $moduleRoot . '/images/red_info.png" class="ajaxFormIcon" id="icm_model_rollback ' . $cm->pid . '"/> <img src="' . $moduleRoot . '/images/view.gif" class="ajaxFormIcon" id="icm_display_rawXml model ' . $cm->pid . '"/>', 'models');
-
-    if (!$cmValid) {
-      //        echo '<pre>'.htmlentities($cm->dumpXml()).'</pre>';
-      $errorsEl = $modelTree->addChild('XML Errors', 'folder');
-
-      foreach (ContentModel::$errors as $err) {
-        $errorsEl->addChild('<b><font color="red">' . $err . '</font></b>');
-      }
-    }
-    else {
-      $mimeTypesEl = $modelTree->addChild('Mimetypes', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_mime ' . $cm->pid . '"/>');
-      $mimetypes = $cm->getMimeTypes();
-      foreach ($mimetypes as $type) {
-        $mimeTypesEl->addChild($type, 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_mime ' . $cm->pid . ' ' . $type . '"/>');
-      }
-
-      $datastreams = $cm->listDatastreams();
-      $dstreamsEl = $modelTree->addChild('Datastreams', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ds ' . $cm->pid . '"/>');
-
-      if (count($datastreams) > 0) {
-        foreach ($datastreams as $ds) {
-          $dsEl = $dstreamsEl->addChild($ds . ($cm->displayInFieldSet($ds) ? '(Display in Fieldset) ' : ''), 'file',
-                  ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ds ' . $cm->pid . ' ' . $ds . '"/>' .
-                  ' <img src="' . $moduleRoot . '/images/view.gif" class="ajaxButtonIcon" id="icm_model_toggle_dsDisplay ' . $cm->pid . ' ' . $ds . '"/>');
-
-          $dispMethods = $cm->getDisplayMethods($ds);
-          $dispMethEl = $dsEl->addChild('Display Methods', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_dispmeth ' . $cm->pid . ' ' . $ds . '"/>');
-          if ($dispMethods !== false && count($dispMethods) > 0) {
-            foreach ($dispMethods as $meth) {
-              $dispMethEl->addChild(($meth['default'] == true ? '<b>' : '') . $meth['file'] . '<br/>' . $meth['class'] . '->' . $meth['method'], 'file',
-                  ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_dispmeth ' . $cm->pid . ' ' . $ds . ' ' . $meth['module'] . ' ' . $meth['file'] . ' ' . $meth['class'] . ' ' . $meth['method'] . '"/>' .
-                  ' <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxButtonIcon" id="icm_model_default_dispmeth ' . $cm->pid . ' ' . $ds . ' ' . $meth['module'] . ' ' . $meth['file'] . ' ' . $meth['class'] . ' ' . $meth['method'] . '"/>' .
-                  ($meth['default'] == true ? '</b>' : ''));
-            }
-          }
-
-          $addMethods = $cm->getAddDsMethod($ds);
-          $addMethodEl = $dsEl->addChild('<font color="green">Add Datastream Method</font>', 'file', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_edit_adddsmeth ' . $cm->pid . ' ' . $ds . '"/>');
-        }
-      }
-
-      $ingestRulesEl = $modelTree->addChild('Ingest Rules', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ingestRule ' . $cm->pid . '"/>');
-      $rules = $cm->getIngestRules();
-      foreach ($rules as $id => $rule) {
-        $ruleEl = $ingestRulesEl->addChild('Rule ' . $id, 'folder', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestRule ' . $cm->pid . ' ' . $id . '"/>');
-        $applToEl = $ruleEl->addChild('Applies To', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_appliesTo ' . $cm->pid . ' ' . $id . '"/>');
-        foreach ($rule['applies_to'] as $type) {
-          $applToEl->addChild($type, 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_appliesTo ' . $cm->pid . ' ' . $id . ' ' . $type . '"/>');
-        }
-
-        $methodsEl = $ruleEl->addChild('Ingest Methods', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ingestMethod ' . $cm->pid . ' ' . $id . '"/>');
-        foreach ($rule['ingest_methods'] as $method) {
-          $methodEl = $methodsEl->addChild($method['file'] . '<br/>' . $method['class'] . '->' . $method['method'], 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestMethod ' . $cm->pid . ' ' . $id . ' ' . $method['module'] . ' ' . $method['file'] . ' ' . $method['class'] . ' ' . $method['method'] . '"/>');
-          $paramEl = $methodEl->addChild('Parameters', 'folder', '<img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ingestMethodParam ' . $cm->pid . ' ' . $id . ' ' . $method['module'] . ' ' . $method['file'] . ' ' . $method['class'] . ' ' . $method['method'] . '"/>');
-          if (count($method['parameters']) > 0) {
-            foreach ($method['parameters'] as $key => $val) {
-              $paramEl->addChild($key . ' = ' . $val, 'file', '  <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestMethodParam ' . $cm->pid . ' ' . $id . ' ' . $method['module'] . ' ' . $method['file'] . ' ' . $method['class'] . ' ' . $method['method'] . ' ' . $key . '"/>');
-            }
-          }
-        }
-      }
-
-      $attr = $cm->getIngestFormAttributes();
-      $ingestFormEl = $modelTree->addChild('Ingest Form<br/>(dsid: <b>' . $attr['dsid'] . '</b> page: <b>' . $attr['page'] . '</b> file_chooser: <b>' . ($attr['hide_file_chooser'] ? 'hidden' : 'visible') . '</b> )', 'folder',
-              '  <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_edit_ingestForm icm_model_edit_ingestForm ' . $cm->pid . ' ' . $attr['dsid'] . ' ' . $attr['page'] . ' ' . ($attr['hide_file_chooser'] ? 'true' : 'false') . '"/>');
-
-      $builderMethod = $cm->getIngestFormBuilderMethod();
-      $ingestFormEl->addChild($builderMethod['file'] . '<br/>Builder: ' . $builderMethod['class'] . '->' . $builderMethod['method'] . '<br/>Handler: ' . $builderMethod['class'] . '->' . $builderMethod['handler'], 'file');
-
-      $elementsEl = $ingestFormEl->addChild('Form Elements', 'folder', '  <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ingestFormElement ' . $cm->pid . '"/>');
-
-      if (($elements = $cm->getIngestFormElements()) !== false) {
-        $j = 0;
-        foreach ($elements as $element) {
-
-          $icons = ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
-
-          if ($j > 0) {
-            $icons.=' <img src="' . $moduleRoot . '/images/blue_up.png" class="ajaxButtonIcon" id="icm_model_inc_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
-          }
-
-          if ($j < count($elements) - 1) {
-            $icons.=' <img src="' . $moduleRoot . '/images/blue_down.png" class="ajaxButtonIcon" id="icm_model_dec_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
-          }
-
-          $icons .= ' <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_edit_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
-
-          $elementEl = $elementsEl->addChild('<b>' . $element['label'] . '</b> ' . $element['name'] . ' (' . $element['type'] . ')', 'file', $icons);
-          $params = $cm->getIngestFormElementParams($element['name']);
-          $paramEl = $elementEl->addChild('Parameters', 'folder', '<img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ingestElementParam ' . $cm->pid . ' ' . $element['name'] . '"/>');
-          if (count($params) > 0) {
-            foreach ($params as $key => $val) {
-              $paramEl->addChild($key . ' = ' . $val, 'file', '  <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestElementParam ' . $cm->pid . ' ' . $element['name'] . ' ' . $key . '"/>');
-            }
-          }
-
-
-          if ($element['type'] == 'select' || $element['type'] == 'radio' || $element['type'] == 'other_select') {
-            $authListEl = $elementEl->addChild(t('Authoritative List'), 'folder', '  <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_authListItem ' . $cm->pid . ' ' . $element['name'] . '"/>');
-            $i = 0;
-            foreach ($element['authoritative_list'] as $value => $label) {
-              $icons = ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_authListItem ' . $cm->pid . ' ' . $element['name'] . ' ' . $value . '"/>';
-              if ($i > 0) {
-                $icons .= ' <img src="' . $moduleRoot . '/images/blue_up.png" class="ajaxButtonIcon" id="icm_model_inc_authListItem ' . $cm->pid . ' ' . $element['name'] . ' ' . $value . '"/>';
-              }
-
-              if ($i < count($element['authoritative_list']) - 1) {
-                $icons .= ' <img src="' . $moduleRoot . '/images/blue_down.png" class="ajaxButtonIcon" id="icm_model_dec_authListItem ' . $cm->pid . ' ' . $element['name'] . ' ' . $value . '"/>';
-              }
-              $authListEl->addChild('<b>' . $label . '</b> ' . $value, 'file', $icons);
-              $i++;
-            }
-          }
-
-          $j++;
-        }
-      }
-
-      $addIcon = '';
-      $metadataMethod = $cm->getEditMetadataMethod();
-      if ($metadataMethod == false) {
-        $addIcon = '  <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_update_editMetadataMethod ' . $cm->pid . '"/>';
-      }
-      $metaDataEl = $modelTree->addChild('Edit Metadata Method', 'folder', $addIcon);
-
-      if ($metadataMethod !== false) {
-        $icons = ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_editMetadataMethod ' . $cm->pid . '"/>';
-        $icons .= ' <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_update_editMetadataMethod ' . $cm->pid . '"/>';
-        $metaDataEl->addChild('DSID: ' . $metadataMethod['dsid'] . '<br/>' . $metadataMethod['file'] . '<br/>Builder: ' . $metadataMethod['class'] . '->' . $metadataMethod['method'] . '<br/>Handler: ' . $metadataMethod['class'] . '->' . $metadataMethod['handler'], 'file', $icons);
-      }
-
-
-      $modelTree->addChild('Services', 'folder', '  <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_service_add ' . $cm->pid . '"/>');
-    }
-
-
-    $ret = $modelTree->buildTree('filetree');
-  }
-
-  if ($ret !== false) {
-    echo $ret;
-  } else
-    echo t('Error: Unable to load content model');
-
-  exit();*/
-}
-
-function icm_ajax_collection_tree() {
-  module_load_include('inc', 'islandora_content_modeler', 'includes/CollectionsTree');
-  $collections_tree = new CollectionsTree();
-  $collections_tree->renderBranches();
-  exit();
-}
-
 function islandora_content_modeler_main() {
   global $base_url;
   $moduleRoot = drupal_get_path('module', 'islandora_content_modeler');
@@ -364,14 +157,12 @@ function islandora_content_modeler_main() {
   drupal_add_css($moduleRoot . '/css/content_modeler.css');
   drupal_add_css($moduleRoot . '/css/jquery.jnotify.css');
   drupal_add_css($moduleRoot . '/css/smoothness/jquery-ui-1.8.1.custom.css');
-
   drupal_add_js($moduleRoot . '/js/jquery.cookie.js');
   drupal_add_js($moduleRoot . '/js/jquery.treeview.min.js');
   drupal_add_js($moduleRoot . '/js/content_modeler.js');
   drupal_add_js($moduleRoot . '/js/jquery.jnotify.js');
 
   $moduleRoot = $base_url . '/' . $moduleRoot;
-
   $content = '<div class="contentModeller">';
   $content .= '<a href="#" class="refresh">Refresh</a>&nbsp;<img src="' . $moduleRoot . '/images/ajax-loader.gif" id="ajaxBusy" alt="Loading"/><br clear="all"/>';
   $content .= '<div class="collection"><h4>' . t('Collections') . '</h4>';

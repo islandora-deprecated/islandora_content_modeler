@@ -63,6 +63,11 @@ class CollectionsTree {
     $this->registerBranches();
   }
 
+  public static function renderCollection() {
+    $collections_tree = new CollectionsTree();
+    $collections_tree->render();
+  }
+
   /**
    * Gets the collection pid that this object repersents.
    * 
@@ -138,25 +143,17 @@ class CollectionsTree {
   /**
    * 
    */
-  public function renderBranches() {
+  private function render() {
     module_load_include('inc', 'islandora_content_modeler', 'treeview');
-
-    // Add Root Element.
     $collection_tree = new treeview($this->getTitle(), 'folder', $this->getTitleIcons(), 'collections');
-
-    // Error Occured report and abort.
     if (!$this->contentModelAndCollectionPolicyIsValid()) {
       $this->addContentModelAndCollectionPolicyErrorsToTree($collection_tree);
       echo $collection_tree->buildTree('filetree');
       exit();
     }
-
-    // Render Branches
     foreach ($this->branches as $branch) {
       $branch->render($collection_tree);
     }
-
-    // Render to page.
     echo $collection_tree->buildTree('filetree');
   }
 

@@ -57,6 +57,45 @@ class ModelsTree {
 
   /**
    *
+   */
+  public static function renderListOfInstalledContentModels() {
+    module_load_include('inc', 'islandora_content_modeler', 'treeview');
+    module_load_include('inc', 'fedora_repository', 'CollectionClass');
+
+    $icon = create_icon(Image::Add, AjaxAction::Form, 'icm_model_new');
+    $modelTree = new treeview('Installed Content Models', 'folder', $icon, 'models');
+
+    $collectionHelper = new CollectionClass();
+    $items = new SimpleXMLElement($collectionHelper->getRelatedItems(variable_get('fedora_content_model_collection_pid', 'islandora:ContentModelCollection'), null, null));
+    $content_models_installed = false;
+    if (count($items->results->result) > 0) {
+      foreach ($items->results->result as $result) {
+        $child_pid = substr($result->object['uri'], strpos($result->object['uri'], '/') + 1);
+        $content_model = ContentModel::loadFromModel($child_pid);
+        if ($content_model !== false) {
+          $title = "<a href='#' class='list_model' id='$child_pid'>$child_pid</a>";
+          $icon = create_icon(Image::Remove, AjaxAction::Form, 'icm_model_purge', array($child_pid));
+          $modelTree->addChild($title, 'file', $icon);
+          $content_models_installed = true;
+        }
+      }
+    }
+    if (!$content_models_installed) {
+      $modelTree->addChild(t('No installed content models found.'));
+    }
+    echo $modelTree->buildTree('filetree');
+  }
+
+  /**
+   * 
+   */
+  public static function renderContentModel() {
+    $models_tree = new ModelsTree();
+    $models_tree->render();
+  }
+
+  /**
+   *
    * @return ContentModel 
    */
   private function getContentModel() {
@@ -106,13 +145,9 @@ class ModelsTree {
   /**
    * 
    */
-  public function renderBranches() {
+  private function render() {
     module_load_include('inc', 'islandora_content_modeler', 'treeview');
-
-    // Create Root Element
     $model_tree = new treeview($this->getTitle(), 'folder', $this->getTitleIcons(), 'models');
-
-    // Error Occured report and abort.
     if (!$this->contentModel->validate()) {
       $errors = $model_tree->addChild('XML Errors', 'folder');
       foreach (ContentModel::$errors as $error) {
@@ -121,14 +156,9 @@ class ModelsTree {
       echo $model_tree->buildTree('filetree');
       exit();
     }
-
-    // Render Branches
     foreach ($this->branches as $branch) {
       $branch->render($model_tree);
     }
-
-    // Render to page.
     echo $model_tree->buildTree('filetree');
   }
-
 }
