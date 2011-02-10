@@ -63,6 +63,9 @@ class CollectionsTree {
     $this->registerBranches();
   }
 
+  /**
+   *
+   */
   public static function renderCollection() {
     $collections_tree = new CollectionsTree();
     $collections_tree->render();
@@ -110,7 +113,7 @@ class CollectionsTree {
    *   ...
    */
   private function getTitleIcons() {
-    $icon = ' '. create_icon(Image::Edit, AjaxAction::Form, 'icm_collection_edit', array($this->collectionPolicy->pid));
+    $icon = ' ' . create_icon(Image::Edit, AjaxAction::Form, 'icm_collection_edit', array($this->collectionPolicy->pid));
     $icon .= create_icon(Image::Info, AjaxAction::Form, 'icm_collection_rollback', array($this->collectionPolicy->pid));
     $icon .= create_icon(Image::View, AjaxAction::Form, 'icm_display_rawXml', array($this->collectionPolicy->pid));
     return $icon;
