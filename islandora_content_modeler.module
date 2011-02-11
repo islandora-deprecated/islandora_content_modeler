@@ -20,7 +20,7 @@ module_load_include('inc', 'islandora_content_modeler', 'includes/AjaxHelperMeth
 function islandora_content_modeler_menu() {
   $items = array();
   $items['admin/content/modeler'] = array(
-    'title' => 'Islandora Content Modeller',
+    'title' => 'Islandora Content Modeler',
     'description' => 'Manage Islandora/Fedora Content Models',
     'page callback' => 'islandora_content_modeler_main',
     'access arguments' => array('administer site configuration'),
@@ -101,7 +101,7 @@ function islandora_content_modeler_main() {
   drupal_add_js($moduleRoot . '/js/jquery.jnotify.js');
 
   $moduleRoot = $base_url . '/' . $moduleRoot;
-  $content = '<div class="contentModeller">';
+  $content = '<div class="contentModeler">';
   $content .= '<a href="#" class="refresh">Refresh</a>&nbsp;<img src="' . $moduleRoot . '/images/ajax-loader.gif" id="ajaxBusy" alt="Loading"/><br clear="all"/>';
   $content .= '<div class="collection"><h4>' . t('Collections') . '</h4>';
   $content .= '<div id="collection_crumbs"></div>';
@@ -2173,7 +2173,7 @@ function icm_model_purge_validate($form, &$form_state) {
     if (($content_model = ContentModel::loadFromModel($model_pid)) !== FALSE) {
       $fedoraItem = new Fedora_Item($model_pid);
 
-      if ($fedoraItem->purge(t('Purged using Islandora Content Modeller.'))) {
+      if ($fedoraItem->purge(t('Purged using Islandora Content Modeler.'))) {
         echo 'success:' . t('Successfully purged content model <b>%model_pid</b>.', array('%model_pid' => $model_pid));
         exit();
       }
@@ -2569,7 +2569,7 @@ function icm_collection_purge_validate($form, &$form_state) {
     if (($cp = CollectionPolicy::loadFromCollection($cp_pid)) !== FALSE) {
       $fedoraItem = new Fedora_Item($cp_pid);
 
-      if ($fedoraItem->purge(t('Purged using Islandora Content Modeller.'))) {
+      if ($fedoraItem->purge(t('Purged using Islandora Content Modeler.'))) {
         echo 'success:' . t('Successfully purged collection  <b>%cp_pid</b>.', array('%cp_pid' => $cp_pid));
         exit();
       }

@@ -1,5 +1,5 @@
 ; $Id$
-name = Islandora Content Modeller
+name = Islandora Content Modeler
 dependencies[] = fedora_repository
 description = Allows you to manage and build content models for Islandora/Fedora.
 package = Fedora Repository
