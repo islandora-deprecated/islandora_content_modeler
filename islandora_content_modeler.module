@@ -49,18 +49,20 @@ function islandora_content_modeler_menu() {
   $items['admin/content/modeler/ajax/getMethods'] = array(
     'page callback' => 'AjaxHelperMethods::getMethods',
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK,
     'file' => 'includes/AjaxHelperMethods.inc',
+    'type' => MENU_CALLBACK,
   );
   $items['admin/content/modeler/ajax/button'] = array(
-    'page callback' => 'icm_ajax_button',
+    'page callback' => 'AjaxHelper::executeButtonPressAction',
     'access arguments' => array('administer site configuration'),
+    'file' => 'includes/AjaxHelperMethods.inc',
     'type' => MENU_CALLBACK
   );
   $items['admin/content/modeler/ajax/processForm/%'] = array(
-    'page callback' => 'icm_ajax_processForm',
+    'page callback' => 'AjaxHelperMethods::processForm',
     'page arguments' => array(5),
     'access arguments' => array('administer site configuration'),
+    'file' => 'includes/AjaxHelperMethods.inc',
     'type' => MENU_CALLBACK
   );
   $items['admin/content/modeler/ajax/model'] = array(
@@ -74,6 +76,12 @@ function islandora_content_modeler_menu() {
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/CollectionsTree.inc'
+  );
+  $items['admin/content/modeller/ajax/element/properties'] = array(
+    'page callback' => 'Forms::getElementProperties',
+    'file' => 'includes/Forms.inc',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK
   );
   return $items;
 }

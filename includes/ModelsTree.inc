@@ -19,6 +19,7 @@ class ModelsTreeBranches {
   const MimeTypes = 'MimeTypes';
   const Datastreams = 'ModelDatastreams';
   const IngestRules = 'IngestRules';
+  const Forms = 'Forms';
   const IngestForm = 'IngestForm';
   const EditMetadataMethod = 'EditMetadataMethod';
   const Services = 'Services';
@@ -31,6 +32,7 @@ class ModelsTreeBranches {
     self::MimeTypes => self::MimeTypes,
     self::Datastreams => self::Datastreams,
     self::IngestRules => self::IngestRules,
+    self::Forms => self::Forms,
     self::IngestForm => self::IngestForm,
     self::EditMetadataMethod => self::EditMetadataMethod,
     self::Services => self::Services,

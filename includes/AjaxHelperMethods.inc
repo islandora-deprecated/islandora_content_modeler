@@ -14,33 +14,28 @@
 class AjaxHelperMethods {
 
   /**
-   *
-   * @param string $form_name
-   * @return Boolean
-   *   Return true if the form is exists otherwise return false.
-   */
-  public static function formExists($form_name) {
-    $valid_forms = array('icm_collection_new', 'icm_collection_edit', 'icm_collection_purge', 'icm_model_new', 'icm_model_purge', 'icm_model_edit_ingestForm', 'icm_model_add_mime', 'icm_collection_add_term', 'icm_collection_add_cmodel', 'icm_model_add_ingestMethodParam', 'icm_model_add_ingestMethod', 'icm_model_add_ingestRule', 'icm_model_add_appliesTo',
-      'icm_model_add_ds', 'icm_model_add_dispmeth', 'icm_model_add_ingestFormElement', 'icm_model_edit_ingestFormElement', 'icm_model_add_authListItem', 'icm_model_update_editMetadataMethod', 'icm_model_rollback', 'icm_collection_rollback', 'icm_display_rawXml', 'icm_model_add_ingestElementParam',
-      'icm_model_edit_adddsmeth', 'icm_model_service_add');
-    return in_array($form_name, $valid_forms) && function_exists($form_name);
-  }
-
-  /**
    * Builds/Validates/Submits the specified form.
    *
    * @param string $form_name
    */
   public static function processForm($form_name) {
+    $include_path = drupal_get_path('module', 'islandora_content_modeler') . "/includes";
+    $dir = opendir($include_path);
+    if ($dir !== false) {
+      while (($file = readdir($dir)) !== false) {
+        if (preg_match('/\.inc$/', $file)) {
+          require_once "$include_path/$file";
+        }
+      }
+    }
+    closedir($dir);
     $params = null;
     if (isset($_GET['formReq'])) {
       $params = preg_split('/\s+/', trim($_GET['formReq']));
     }
-    if (icm_ajax_formExists($form_name)) {
-      $form_content = drupal_get_form($form_name, $params);
-      echo theme_status_messages('error');
-      echo $form_content;
-    }
+    $form_content = drupal_get_form($form_name, $params);
+    echo theme_status_messages('error');
+    echo $form_content;
   }
 
   /**
