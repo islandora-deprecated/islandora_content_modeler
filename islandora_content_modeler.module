@@ -168,7 +168,7 @@ function icm_ajax_model_list() {
       $child_pid = substr($res->object['uri'], strpos($res->object['uri'], '/') + 1);
 
       if (($cm = ContentModel::loadFromModel($child_pid)) !== false) {
-        $modelTree->addChild('<a href="#" class="list_model" id="' . $child_pid . '">' . $child_pid . '</a>', 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxFormIcon" id="icm_model_purge ' . $child_pid . '"/>');
+        $modelTree->addChild('<a href="#" class="list_model" id="' . $child_pid . '">' . $child_pid . '</a>', 'file', ' <img title = "Delete" src="' . $moduleRoot . '/images/remove.png" class="ajaxFormIcon" id="icm_model_purge ' . $child_pid . '"/>');
         $modelCount++;
       }
     }
@@ -197,7 +197,7 @@ function icm_ajax_model_tree() {
   if ($cm !== false) {
     $cmValid = $cm->validate();
 
-    $modelTree = new treeview($cm->pid . ($cmValid ? '' : '!'), 'folder', ' <img src="' . $moduleRoot . '/images/red_info.png" class="ajaxFormIcon" id="icm_model_rollback ' . $cm->pid . '"/> <img src="' . $moduleRoot . '/images/view.gif" class="ajaxFormIcon" id="icm_display_rawXml model ' . $cm->pid . '"/>', 'models');
+    $modelTree = new treeview($cm->pid . ($cmValid ? '' : '!'), 'folder', ' <img title = "Rollback to earlier version" src="' . $moduleRoot . '/images/red_info.png" class="ajaxFormIcon" id="icm_model_rollback ' . $cm->pid . '"/> <img title = "Display raw XML" src="' . $moduleRoot . '/images/view.gif" class="ajaxFormIcon" id="icm_display_rawXml model ' . $cm->pid . '"/>', 'models');
 
     if (!$cmValid) {
       //        echo '<pre>'.htmlentities($cm->dumpXml()).'</pre>';
@@ -211,7 +211,7 @@ function icm_ajax_model_tree() {
       $mimeTypesEl = $modelTree->addChild('Mimetypes', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_mime ' . $cm->pid . '"/>');
       $mimetypes = $cm->getMimeTypes();
       foreach ($mimetypes as $type) {
-        $mimeTypesEl->addChild($type, 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_mime ' . $cm->pid . ' ' . $type . '"/>');
+        $mimeTypesEl->addChild($type, 'file', ' <img title = "Remove mimetype" src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_mime ' . $cm->pid . ' ' . $type . '"/>');
       }
 
       $datastreams = $cm->listDatastreams();
@@ -220,7 +220,7 @@ function icm_ajax_model_tree() {
       if (count($datastreams) > 0) {
         foreach ($datastreams as $ds) {
           $dsEl = $dstreamsEl->addChild($ds . ($cm->displayInFieldSet($ds) ? '(Display in Fieldset) ' : ''), 'file',
-                  ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ds ' . $cm->pid . ' ' . $ds . '"/>' .
+                  ' <img title = "Remove datastream" src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ds ' . $cm->pid . ' ' . $ds . '"/>' .
                   ' <img src="' . $moduleRoot . '/images/view.gif" class="ajaxButtonIcon" id="icm_model_toggle_dsDisplay ' . $cm->pid . ' ' . $ds . '"/>');
 
           $dispMethods = $cm->getDisplayMethods($ds);
@@ -242,7 +242,7 @@ function icm_ajax_model_tree() {
       $ingestRulesEl = $modelTree->addChild('Ingest Rules', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_ingestRule ' . $cm->pid . '"/>');
       $rules = $cm->getIngestRules();
       foreach ($rules as $id => $rule) {
-        $ruleEl = $ingestRulesEl->addChild('Rule ' . $id, 'folder', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestRule ' . $cm->pid . ' ' . $id . '"/>');
+        $ruleEl = $ingestRulesEl->addChild('Rule ' . $id, 'folder', ' <img title = "Remove ingest rule" src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestRule ' . $cm->pid . ' ' . $id . '"/>');
         $applToEl = $ruleEl->addChild('Applies To', 'folder', ' <img src="' . $moduleRoot . '/images/add.png" class="ajaxFormIcon" id="icm_model_add_appliesTo ' . $cm->pid . ' ' . $id . '"/>');
         foreach ($rule['applies_to'] as $type) {
           $applToEl->addChild($type, 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_appliesTo ' . $cm->pid . ' ' . $id . ' ' . $type . '"/>');
@@ -262,7 +262,7 @@ function icm_ajax_model_tree() {
 
       $attr = $cm->getIngestFormAttributes();
       $ingestFormEl = $modelTree->addChild('Ingest Form<br/>(dsid: <b>' . $attr['dsid'] . '</b> page: <b>' . $attr['page'] . '</b> file_chooser: <b>' . ($attr['hide_file_chooser'] ? 'hidden' : 'visible') . '</b> )', 'folder',
-              '  <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_edit_ingestForm icm_model_edit_ingestForm ' . $cm->pid . ' ' . $attr['dsid'] . ' ' . $attr['page'] . ' ' . ($attr['hide_file_chooser'] ? 'true' : 'false') . '"/>');
+              '  <img title = "Edit ingest form" src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_edit_ingestForm icm_model_edit_ingestForm ' . $cm->pid . ' ' . $attr['dsid'] . ' ' . $attr['page'] . ' ' . ($attr['hide_file_chooser'] ? 'true' : 'false') . '"/>');
 
       $builderMethod = $cm->getIngestFormBuilderMethod();
       $ingestFormEl->addChild($builderMethod['file'] . '<br/>Builder: ' . $builderMethod['class'] . '->' . $builderMethod['method'] . '<br/>Handler: ' . $builderMethod['class'] . '->' . $builderMethod['handler'], 'file');
@@ -273,17 +273,17 @@ function icm_ajax_model_tree() {
         $j = 0;
         foreach ($elements as $element) {
 
-          $icons = ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
+          $icons = ' <img title = "Remove form element" src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_model_remove_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
 
           if ($j > 0) {
-            $icons.=' <img src="' . $moduleRoot . '/images/blue_up.png" class="ajaxButtonIcon" id="icm_model_inc_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
+            $icons.=' <img title = "Move up" src="' . $moduleRoot . '/images/blue_up.png" class="ajaxButtonIcon" id="icm_model_inc_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
           }
 
           if ($j < count($elements) - 1) {
-            $icons.=' <img src="' . $moduleRoot . '/images/blue_down.png" class="ajaxButtonIcon" id="icm_model_dec_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
+            $icons.=' <img title = "Move down" src="' . $moduleRoot . '/images/blue_down.png" class="ajaxButtonIcon" id="icm_model_dec_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
           }
 
-          $icons .= ' <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_edit_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
+          $icons .= ' <img title = "Edit form element" src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_model_edit_ingestFormElement ' . $cm->pid . ' ' . $element['name'] . '"/>';
 
           $elementEl = $elementsEl->addChild('<b>' . $element['label'] . '</b> ' . $element['name'] . ' (' . $element['type'] . ')', 'file', $icons);
           $params = $cm->getIngestFormElementParams($element['name']);
@@ -368,7 +368,7 @@ function icm_ajax_collection_tree() {
     $cmValid = $cm->validate();
     $cpValid = $cp->validate();
 
-    $collectionTree = new treeview($pid . ($cpValid ? '' : '!') . ' (' . $cm->pid . ($cmValid ? '' : '!') . ')', 'folder', ' <img src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_collection_edit ' . $cp->pid . '"/> <img src="' . $moduleRoot . '/images/red_info.png" class="ajaxFormIcon" id="icm_collection_rollback ' . $cp->pid . '"/>  <img src="' . $moduleRoot . '/images/view.gif" class="ajaxFormIcon" id="icm_display_rawXml collection ' . $cp->pid . '"/>', 'collections');
+    $collectionTree = new treeview($pid . ($cpValid ? '' : '!') . ' (' . $cm->pid . ($cmValid ? '' : '!') . ')', 'folder', ' <img title = "Edit RDF and staging" src="' . $moduleRoot . '/images/edit.gif" class="ajaxFormIcon" id="icm_collection_edit ' . $cp->pid . '"/> <img title ="Rollback to earlier version" src="' . $moduleRoot . '/images/red_info.png" class="ajaxFormIcon" id="icm_collection_rollback ' . $cp->pid . '"/>  <img title = "View Raw XML" src="' . $moduleRoot . '/images/view.gif" class="ajaxFormIcon" id="icm_display_rawXml collection ' . $cp->pid . '"/>', 'collections');
 
     if (!$cmValid || !$cpValid) {
       //        echo '<pre>'.htmlentities($cm->dumpXml()).'</pre>';
@@ -391,7 +391,7 @@ function icm_ajax_collection_tree() {
           $childrenAllowed = true;
         }
 
-        $cm_tree->addChild($ccm->name . ' (<a href="#" class="collection_model" id="' . $ccm->pid . '">' . $ccm->pid . '</a>)', 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_collection_remove_cmodel ' . $cssPid . ' ' . $ccm->pid . '"/>');
+        $cm_tree->addChild($ccm->name . ' (<a href="#" class="collection_model" id="' . $ccm->pid . '">' . $ccm->pid . '</a>)', 'file', ' <img title = "Delete" src="' . $moduleRoot . '/images/remove.png" class="ajaxButtonIcon" id="icm_collection_remove_cmodel ' . $cssPid . ' ' . $ccm->pid . '"/>');
       }
 
       $dstreams = $cm->listDatastreams();
@@ -420,7 +420,7 @@ function icm_ajax_collection_tree() {
 
             $child_cp = CollectionPolicy::loadFromCollection($child_pid);
             if ($child_cp !== false) {
-              $child_tree->addChild('<a href="#" class="collection_child" id="' . $child_pid . '">' . $child_pid . '</a> (<a href="#" class="collection_model" id="' . $model_pid . '">' . $model_pid . '</a>)', 'file', ' <img src="' . $moduleRoot . '/images/remove.png" class="ajaxFormIcon" id="icm_collection_purge ' . $child_pid . '"/>');
+              $child_tree->addChild('<a href="#" class="collection_child" id="' . $child_pid . '">' . $child_pid . '</a> (<a href="#" class="collection_model" id="' . $model_pid . '">' . $model_pid . '</a>)', 'file', ' <img title = "Delete" src="' . $moduleRoot . '/images/remove.png" class="ajaxFormIcon" id="icm_collection_purge ' . $child_pid . '"/>');
             }
           }
         }
@@ -3017,7 +3017,7 @@ function icm_model_purge(&$form_state, $params=null) {
       '#default_vale' => 0,
       '#required' => TRUE);
 
-    $form['form']['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+   $form['form']['submit'] = array('#type' => 'submit', '#value' => t('Purge'));
   }
   else {
     form_set_error('', t('Error: Unable to load content model <b>%model_pid</b>.', array('%model_pid' => $model_pid)));
@@ -3413,7 +3413,7 @@ function icm_collection_purge(&$form_state, $params=null) {
       '#default_vale' => 0,
       '#required' => TRUE);
 
-    $form['form']['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+    $form['form']['submit'] = array('#type' => 'submit', '#value' => t('Purge'));
   }
   else {
     form_set_error('', t('Error: Unable to load collection <b>%cp_pid</b>.', array('%cp_pid' => $cp_pid)));
