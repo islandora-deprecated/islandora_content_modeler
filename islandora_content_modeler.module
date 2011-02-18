@@ -2967,11 +2967,11 @@ function icm_model_rollback(&$form_state, $params=null) {
 function icm_model_purge_validate($form, &$form_state) {
 
   if ($form_state['values']['form']['confirm'] == 0) {
-    form_set_error('form][confirm', t('If you would like to purge the selected content model, please check the confirmation checkbox and try again.'));
+    drupal_set_message(t('If you would like to purge the selected content model, please check the confirmation checkbox and try again.'), 'warning');
+    echo (theme('status_messages'));
   }
   else {
     $model_pid = $form_state['values']['form']['model_pid'];
-
     module_load_include('inc', 'fedora_repository', 'api/fedora_item');
     module_load_include('inc', 'fedora_repository', 'ContentModel');
 
@@ -2979,15 +2979,18 @@ function icm_model_purge_validate($form, &$form_state) {
       $fedoraItem = new Fedora_Item($model_pid);
 
       if ($fedoraItem->purge(t('Purged using Islandora Content Modeler.'))) {
-        echo 'success:' . t('Successfully purged content model <b>%model_pid</b>.', array('%model_pid' => $model_pid));
+        drupal_set_message(t('Successfully purged content model <b>%model_pid</b>.', array('%model_pid' => $model_pid)));
+        echo (theme('status_messages'));
         exit();
       }
       else {
-        form_set_error('', t('Error: Purge failed. Please contact an administrator for assistance.'));
+        drupal_set_message(t('Error: Purge failed. Please contact an administrator for assistance.'), 'warning');
+        echo (theme('status_messages'));
       }
     }
     else {
-      form_set_error('', t('Error: Unable to load specified content model.'));
+      drupal_set_message(t('Error: Unable to load specified content model.'), 'warning');
+      echo (theme('status_messages'));
     }
   }
 }
@@ -3017,7 +3020,7 @@ function icm_model_purge(&$form_state, $params=null) {
       '#default_vale' => 0,
       '#required' => TRUE);
 
-   $form['form']['submit'] = array('#type' => 'submit', '#value' => t('Purge'));
+    $form['form']['submit'] = array('#type' => 'submit', '#value' => t('Purge'));
   }
   else {
     form_set_error('', t('Error: Unable to load content model <b>%model_pid</b>.', array('%model_pid' => $model_pid)));
@@ -3363,7 +3366,8 @@ function icm_model_new(&$form_state, $params=null) {
 function icm_collection_purge_validate($form, &$form_state) {
 
   if ($form_state['values']['form']['confirm'] == 0) {
-    form_set_error('form][confirm', t('If you would like to purge the selected collection, please check the confirmation checkbox and try again.'));
+    drupal_set_message(t('If you would like to purge the selected collection, please check the confirmation checkbox and try again.'), 'warning');
+    echo (theme('status_messages'));
   }
   else {
     $cp_pid = $form_state['values']['form']['cp_pid'];
