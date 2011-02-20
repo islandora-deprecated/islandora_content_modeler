@@ -9,6 +9,10 @@
  * Allowing users to view/edit/add/remove elements from both
  * content models and collections.
  */
+global $base_url;
+define('AHAH_WRAPPER', 'icm-element-properties-wrapper');
+define('MODULE_ROOT', $base_url . '/' . drupal_get_path('module', 'islandora_content_modeller'));
+
 module_load_include('inc', 'islandora_content_modeler', 'includes/AjaxHelperMethods');
 
 /**
@@ -40,6 +44,12 @@ function islandora_content_modeler_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/AjaxHelperMethods.inc',
   );
+  $items['admin/content/modeler/ajax/getForms'] = array(
+    'page callback' => 'AjaxHelperMethods::getForms',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/AjaxHelperMethods.inc',
+  );
   $items['admin/content/modeler/ajax/getClasses'] = array(
     'page callback' => 'AjaxHelperMethods::getClasses',
     'access arguments' => array('administer site configuration'),
@@ -53,7 +63,7 @@ function islandora_content_modeler_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/content/modeler/ajax/button'] = array(
-    'page callback' => 'AjaxHelper::executeButtonPressAction',
+    'page callback' => 'AjaxHelperMethods::executeButtonPressAction',
     'access arguments' => array('administer site configuration'),
     'file' => 'includes/AjaxHelperMethods.inc',
     'type' => MENU_CALLBACK
@@ -77,7 +87,7 @@ function islandora_content_modeler_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/CollectionsTree.inc'
   );
-  $items['admin/content/modeller/ajax/element/properties'] = array(
+  $items['admin/content/modeler/ajax/element/properties'] = array(
     'page callback' => 'Forms::getElementProperties',
     'file' => 'includes/Forms.inc',
     'access arguments' => array('administer site configuration'),
@@ -100,19 +110,44 @@ function icm_get_modules() {
 
 function islandora_content_modeler_main() {
   global $base_url;
-  $moduleRoot = drupal_get_path('module', 'islandora_content_modeler');
-  drupal_add_css($moduleRoot . '/css/jquery.treeview.css');
-  drupal_add_css($moduleRoot . '/css/content_modeler.css');
-  drupal_add_css($moduleRoot . '/css/jquery.jnotify.css');
-  drupal_add_css($moduleRoot . '/css/smoothness/jquery-ui-1.8.1.custom.css');
-  drupal_add_js($moduleRoot . '/js/jquery.cookie.js');
-  drupal_add_js($moduleRoot . '/js/jquery.treeview.min.js');
-  drupal_add_js($moduleRoot . '/js/content_modeler.js');
-  drupal_add_js($moduleRoot . '/js/jquery.jnotify.js');
+  $module_root = drupal_get_path('module', 'islandora_content_modeler');
+  drupal_add_css($module_root . '/css/jquery.treeview.css');
+  drupal_add_css($module_root . '/css/content_modeler.css');
+  drupal_add_css($module_root . '/css/jquery.jnotify.css');
+  drupal_add_css($module_root . '/css/smoothness/jquery-ui-1.8.1.custom.css');
+  drupal_add_js($module_root . '/js/jquery.cookie.js');
+  drupal_add_js($module_root . '/js/jquery.treeview.min.js');
+  drupal_add_js($module_root . '/js/content_modeler.js');
+  drupal_add_js($module_root . '/js/jquery.jnotify.js');
 
-  $moduleRoot = $base_url . '/' . $moduleRoot;
+  // Extras for the form elements
+  drupal_add_js($module_root . '/js/form_builder.js');
+  // Setup ahah settings for forms that may be generated in the future. Add each ahah event here.
+  drupal_add_js($module_root . '/js/ahah.js');
+  drupal_add_js('misc/jquery.form.js');
+  drupal_add_js('misc/ahah.js');
+  $ahah_binding = array(
+    'url' => url('admin/content/modeler/ajax/element/properties'),
+    'event' => 'change',
+    'wrapper' => AHAH_WRAPPER,
+    'selector' => '#edit-type',
+    'effect' => 'fade',
+    'method' => 'replace',
+    'progress' => array('type' => 'throbber'),
+    'button' => FALSE,
+  );
+  drupal_add_js(array('ahah' => array('edit-type' => $ahah_binding)), 'setting');
+
+  // Lists include in ahah need this... Urg hack
+  $path = drupal_get_path('module', 'islandora_form_builder_elements');
+  drupal_add_js($path . '/js/jquery.tag.editor-min.js');
+  drupal_add_js($path . '/js/list.js');
+  drupal_add_css($path . '/css/list.css');
+  // End hack
+
+  $module_root = $base_url . '/' . $module_root;
   $content = '<div class="contentModeler">';
-  $content .= '<a href="#" class="refresh">Refresh</a>&nbsp;<img src="' . $moduleRoot . '/images/ajax-loader.gif" id="ajaxBusy" alt="Loading"/><br clear="all"/>';
+  $content .= '<a href="#" class="refresh">Refresh</a>&nbsp;<img src="' . $module_root . '/images/ajax-loader.gif" id="ajaxBusy" alt="Loading"/><br clear="all"/>';
   $content .= '<div class="collection"><h4>' . t('Collections') . '</h4>';
   $content .= '<div id="collection_crumbs"></div>';
   $content .= '<div id="collection_tree"></div></div>';

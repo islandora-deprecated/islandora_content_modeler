@@ -14,11 +14,9 @@
 class AjaxHelperMethods {
 
   /**
-   * Builds/Validates/Submits the specified form.
-   *
-   * @param string $form_name
+   * Loads all the files in the includes directory.
    */
-  public static function processForm($form_name) {
+  public static function loadIncludeFiles() {
     $include_path = drupal_get_path('module', 'islandora_content_modeler') . "/includes";
     $dir = opendir($include_path);
     if ($dir !== false) {
@@ -29,6 +27,15 @@ class AjaxHelperMethods {
       }
     }
     closedir($dir);
+  }
+
+  /**
+   * Builds/Validates/Submits the specified form.
+   *
+   * @param string $form_name
+   */
+  public static function processForm($form_name) {
+    self::loadIncludeFiles();
     $params = null;
     if (isset($_GET['formReq'])) {
       $params = preg_split('/\s+/', trim($_GET['formReq']));
@@ -46,12 +53,21 @@ class AjaxHelperMethods {
    * executed here.
    */
   public static function executeButtonPressAction() {
+    self::loadIncludeFiles();
     module_load_include('inc', 'fedora_repository', 'CollectionPolicy');
     module_load_include('inc', 'fedora_repository', 'ContentModel');
     $params = null;
     if (isset($_GET['formReq'])) {
       $params = preg_split('/\s+/', trim($_GET['formReq']));
     }
+
+    $func = trim($params[0]);
+    if (is_callable($func)) {
+      array_shift($params);
+      call_user_func_array($func, $params);
+      exit();
+    }
+
     switch (strtolower($params[0])) {
       case 'icm_model_remove_editmetadatamethod':
         if (count($params) == 2) {
@@ -560,6 +576,27 @@ class AjaxHelperMethods {
       while (($file = readdir($dir)) !== false) {
         if (preg_match('/\.inc$/', $file)) {
           echo '<option ' . (isset($_GET['file']) && $_GET['file'] == 'plugins/' . $file ? 'selected="selected"' : '') . '>plugins/' . $file . '</option>';
+        }
+      }
+    }
+    exit();
+  }
+
+  /**
+   * 
+   */
+  public static function getForms() {
+    echo '<option></option>';
+    $plugin_path = drupal_get_path('module', $_GET['module']);
+    if (!$plugin_path) {
+      exit();
+    }
+    $plugin_path.='/forms';
+    $files = array('');
+    if (is_dir($plugin_path) && ($dir = opendir($plugin_path)) !== false) {
+      while (($file = readdir($dir)) !== false) {
+        if (preg_match('/\.inc$/', $file)) {
+          echo '<option ' . (isset($_GET['file']) && $_GET['file'] == 'forms/' . $file ? 'selected="selected"' : '') . '>forms/' . $file . '</option>';
         }
       }
     }

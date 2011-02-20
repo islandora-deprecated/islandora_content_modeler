@@ -37,6 +37,7 @@ class FormElementDocument extends DOMDocument {
     if (method_exists($this, $func)) {
       call_user_func_array(array($this, $func), array(&$root, &$values));
     }
+    $this->setFormBuilderElementProperties($root, $values['form_builder']);
   }
 
   /**
@@ -54,9 +55,47 @@ class FormElementDocument extends DOMDocument {
     $title->appendChild(new DOMText($values['title']));
     $description = $root->appendChild(new DOMElement('description'));
     $description->appendChild(new DOMText($values['description']));
-    $xpath = $root->appendChild(new DOMElement('xpath'));
-    $xpath->appendChild(new DOMText($values['xpath']));
-    $xpath->setAttribute('full_path', $values['full_path'] ? 'true' : 'false');
+  }
+
+  /**
+   * Appends form builder properties to the element.
+   *
+   * @param DOMElement $root
+   *   Root element of the dom document.
+   * @param Array $values
+   *   An array of submitted values, repersenting the form element's
+   *   properties.
+   */
+  private function setFormBuilderElementProperties(&$root, &$values) {
+    $create_element = $values['element'] != '';
+    $create_attribute = $values['attribute'] != '';
+    $create_xml = $values['xml'] != '';
+    if(!$create_element && !$create_attribute && !$create_xml) {
+      return;
+    }
+    $form_builder = $root->appendChild(new DOMElement('form_builder'));
+    $xpath = $form_builder->appendChild(new DOMElement('xpath'));
+    $path = $xpath->appendChild(new DOMElement('path'));
+    $path->appendChild(new DOMText($values['path']));
+    $path->setAttribute('full', $values['full'] ? 'true' : 'false');
+    if($values['full']) {
+      $parent_path = $xpath->appendChild(new DOMElement('parent_path'));
+      $parent_path->appendChild(new DOMText($values['parent_path']));
+    }
+    if($create_element) {
+      $xml = $xpath->appendChild(new DOMElement('element'));
+      $xml->appendChild(new DOMText($values['element']));
+    }
+    else if ($create_attribute) {
+      $xml = $xpath->appendChild(new DOMElement('attribute'));
+      $xml->appendChild(new DOMText($values['attribute']));
+    }
+    else if ($create_xml) {
+      $xml = $xpath->appendChild(new DOMElement('xml'));
+      $xml->appendChild(new DOMText($values['xml']));
+    }
+    $required = $form_builder->appendChild(new DOMElement('require_value'));
+    $required->appendChild(new DOMText($values['require_value'] ? 'true' : 'false'));
   }
 
   /**
