@@ -64,7 +64,7 @@ class AjaxHelperMethods {
     $func = trim($params[0]);
     if (is_callable($func)) {
       array_shift($params);
-      call_user_func_array($func, $params);
+      call_user_func($func, $params);
       exit();
     }
 

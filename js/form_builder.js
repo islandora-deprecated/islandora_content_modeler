@@ -1,9 +1,9 @@
 function hideAndClearElement(name) {
-    $("#edit-"+name).val("");
-    $("#edit-"+name+"-wrapper").hide();
+    $("#edit-element-properties-0-form-builder-"+name).val("");
+    $("#edit-element-properties-0-form-builder-"+name+"-wrapper").hide();
 }
 function showElement(name) {
-    $("#edit-"+name+"-wrapper").show();
+    $("#edit-element-properties-0-form-builder-"+name+"-wrapper").show();
 }
 
 function showNodeCreationType(value) {
@@ -27,22 +27,21 @@ function showNodeCreationType(value) {
 }
 
 $(document).ready(function() {
-    $('#edit-full').live('change', function() {
+    $('#edit-element-properties-0-form-builder-full').live('change', function() {
         if($(this).attr('checked')) {
-            $("#edit-parent-path-wrapper").show();
+            showElement('parent-path');
         }
         else {
-            $("#edit-parent-path").val('');
-            $("#edit-parent-path-wrapper").hide();
+            hideAndClearElement('parent-path');
         }
     });
-    $('#edit-select').live('change', function() {
+    $('#edit-element-properties-0-form-builder-select').live('change', function() {
         showNodeCreationType($(this).val());
     });
     $("#ajaxForm").ajaxComplete(function(event, request, settings) {
-        if($('#edit-full').attr('checked') == false) {
-            $("#edit-parent-path-wrapper").hide();
+        if($('#edit-element-properties-0-form-builder-full').attr('checked') == false) {
+            hideAndClearElement('parent-path');
         }
-        showNodeCreationType($('#edit-select').val());
+        showNodeCreationType($('#edit-element-properties-0-form-builder-select').val());
     });
 });

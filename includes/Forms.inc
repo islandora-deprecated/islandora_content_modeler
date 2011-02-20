@@ -51,7 +51,7 @@ class Forms {
     $form_build_id = $_POST['form_build_id'];
     if (!$form = form_get_cache($form_build_id, $form_state))
       exit();
-    $forms = Forms::createFromPID($form_state['post']['model_pid']);
+    $forms = self::createFromPID($form_state['post']['model_pid']);
     $form['form']['element_properties'] = $forms->getElementPropertiesForm($form_state['post']['type']);
     $form_id = $form['#parameters'][0];
     $form['#post'] = $_POST;
@@ -66,15 +66,28 @@ class Forms {
   }
 
   /**
+   *
+   * @param array $params
+   * @return array
+   */
+  public static function expandParameters($params) {
+    if (is_array($params)) {
+      list($model_pid, $form_name) = $params;
+      $path = implode(' ', array_splice($params, 2));
+      return array($model_pid, $form_name, $path);
+    }
+    return array();
+  }
+
+  /**
    * Removes a form from the content model.
    *
-   * @param string $model_pid
-   *   Content model pid.
-   * @param string $form_name
-   *   The name of the form to remove.
+   * @param array $params
+   *   Ajax button callback parameters.
    */
-  public static function removeForm($model_pid, $form_name) {
-    $forms = Forms::createFromPID($model_pid);
+  public static function removeForm($params) {
+    list($model_pid, $form_name) = self::expandParameters($params);
+    $forms = self::createFromPID($model_pid);
     if ($forms->_removeForm($form_name)) {
       echo 'success:' . t('Removed form <b>%name</b> from model <b>%model_pid</b>.',
           array('%name' => $form_name, '%model_pid' => $model_pid));
@@ -88,16 +101,13 @@ class Forms {
 
   /**
    * Removes a form element from a form.
-   * 
-   * @param string $model_pid
-   *   Content model pid.
-   * @param string $form_name
-   *   The form the form element belongs to.
-   * @param string $path 
-   *   The path to the element to remove.
+   *
+   * @param array $params
+   *   Ajax button callback parameters.
    */
-  public static function removeFormElement($model_pid, $form_name, $path) {
-    $forms = Forms::createFromPID($model_pid);
+  public static function removeFormElement($params) {
+    list($model_pid, $form_name, $path) = self::expandParameters($params);
+    $forms = self::createFromPID($model_pid);
     if ($forms->_removeFormElement($form_name, $path)) {
       echo 'success:' . t('Removed form element from model <b>%model_pid</b>.',
           array('%name' => $form_name, '%model_pid' => $model_pid));
@@ -112,15 +122,12 @@ class Forms {
   /**
    * Moves the element higher up in its list of siblings.
    *
-   * @param string $model_pid
-   *   Content model pid.
-   * @param string $form_name
-   *   The form the form element belongs to.
-   * @param string $path
-   *   The path to the element to increment.
+   * @param array $params
+   *   Ajax button callback parameters.
    */
-  public static function incrementFormElement($model_pid, $form_name, $path) {
-    $forms = Forms::createFromPID($model_pid);
+  public static function incrementFormElement($params) {
+    list($model_pid, $form_name, $path) = self::expandParameters($params);
+    $forms = self::createFromPID($model_pid);
     if ($forms->_incrementFormElement($form_name, $path)) {
       echo 'success:' . t('Successful.');
     }
@@ -133,15 +140,12 @@ class Forms {
   /**
    * Moves the element higher up in its list of siblings.
    *
-   * @param string $model_pid
-   *   Content model pid.
-   * @param string $form_name
-   *   The form the form element belongs to.
-   * @param string $path
-   *   The path to the element to increment.
+   * @param array $params
+   *   Ajax button callback parameters.
    */
-  public static function decrementFormElement($model_pid, $form_name, $path) {
-    $forms = Forms::createFromPID($model_pid);
+  public static function decrementFormElement($params) {
+    list($model_pid, $form_name, $path) = self::expandParameters($params);
+    $forms = self::createFromPID($model_pid);
     if ($forms->_decrementFormElement($form_name, $path)) {
       echo 'success:' . t('Successful');
     }
@@ -170,10 +174,10 @@ class Forms {
     $icons = create_icon(Image::Remove, AjaxAction::Button, 'Forms::removeForm', $params);
     $icons .= create_icon(Image::Add, AjaxAction::Form, 'icm_add_form_element', $params);
     if (!$this->isFirstChildElement($form)) {
-      $icons .= create_icon(Image::Up, AjaxAction::Button, 'icm_inc_form_element', $params);
+      $icons .= create_icon(Image::Up, AjaxAction::Button, 'Forms::incrementFormElement', $params);
     }
     if (!$this->isLastChildElement($form)) {
-      $icons .= create_icon(Image::Down, AjaxAction::Button, 'icm_dec_form_element', $params);
+      $icons .= create_icon(Image::Down, AjaxAction::Button, 'Forms::decrementFormElement', $params);
     }
     $icons .= create_icon(Image::Edit, AjaxAction::Form, 'icm_edit_form', $params);
     return $icons;
@@ -188,7 +192,7 @@ class Forms {
   function getFormElementIcons($form_name, $form_element) {
     $path_from_form_node = array_reverse($this->getPathToFormElement($form_element));
     $params = array($this->contentModel->pid, $form_name, implode(' ', $path_from_form_node));
-    $icons = create_icon(Image::Remove, AjaxAction::Button, 'icm_remove_form_element', $params);
+    $icons = create_icon(Image::Remove, AjaxAction::Button, 'Forms::removeFormElement', $params);
     $result = $form_element->getElementsByTagName('content');
     if ($result && $result->length) {
       $content = $result->item(0);
@@ -197,10 +201,10 @@ class Forms {
       $icons .= create_icon(Image::Add, AjaxAction::Form, 'icm_add_form_element', $add_params);
     }
     if (!$this->isFirstChildElement($form_element)) {
-      $icons .= create_icon(Image::Up, AjaxAction::Button, 'icm_inc_form_element', $params);
+      $icons .= create_icon(Image::Up, AjaxAction::Button, 'Forms::incrementFormElement', $params);
     }
     if (!$this->isLastChildElement($form_element)) {
-      $icons .= create_icon(Image::Down, AjaxAction::Button, 'icm_dec_form_element', $params);
+      $icons .= create_icon(Image::Down, AjaxAction::Button, 'Forms::decrementFormElement', $params);
     }
     $icons .= create_icon(Image::Edit, AjaxAction::Form, 'icm_edit_form_element', $params);
     return $icons;
@@ -439,8 +443,8 @@ class Forms {
    */
   private function _removeFormElement($form_name, $path) {
     $form_element = $this->findFormElementFromPath($form_name, $path);
-    $result = $this->contentModel->removeElementFromForm($form_element);
-    return $result && $this->contentModel->saveToFedora();
+    $form_element->parentNode->removeChild($form_element);
+    return $this->contentModel->saveToFedora();
   }
 
   /**
@@ -578,7 +582,7 @@ class Forms {
    *   NULL if the element/attribute is not found.
    */
   private function getValue($path, $node = NULL) {
-    if(!$node) {
+    if (!$node) {
       return NULL;
     }
     $xpath = new DOMXPath($node->ownerDocument);
@@ -608,7 +612,7 @@ class Forms {
    *   TRUE if the element/attribute exists FALSE otherwise.
    */
   private function exists($path, $node = NULL) {
-    if(!$node) {
+    if (!$node) {
       return FALSE;
     }
     $xpath = new DOMXPath($node->ownerDocument);
@@ -926,24 +930,6 @@ class Forms {
 }
 
 /**
- * Convience method for processing the parameters passed to hook's and callbacks.
- *
- * @param array $params
- *   Parameters passed to a hook function.
- * 
- * @return array
- *   List of parameters used by the funciton.
- */
-function icm_process_params($params) {
-  if (is_array($params)) {
-    list($model_pid, $form_name) = $params;
-    $path = implode(' ', array_splice($params, 2));
-    return array($model_pid, $form_name, $path);
-  }
-  return array();
-}
-
-/**
  *
  * @param <type> $element
  * @param <type> $form_state
@@ -985,7 +971,7 @@ function icm_validate_form_name_edit($element, &$form_state) {
  */
 function icm_add_form(&$form_state, $params) {
   if (is_array($params)) {
-    list($model_pid) = icm_process_params($params);
+    list($model_pid) = Forms::expandParameters($params);
   }
   else {
     $model_pid = $form_state['post']['form']['model_pid'];
@@ -1093,7 +1079,7 @@ function icm_add_form_submit($form, &$form_state) {
  */
 function icm_edit_form(&$form_state, $params) {
   if (is_array($params)) {
-    list($model_pid, $form_name) = icm_process_params($params);
+    list($model_pid, $form_name) = Forms::expandParameters($params);
   }
   else {
     $model_pid = $form_state['post']['form']['model_pid'];
@@ -1212,7 +1198,7 @@ function icm_edit_form_submit($form, &$form_state) {
  */
 function icm_add_form_element(&$form_state, $params) {
   if (is_array($params)) {
-    list($model_pid, $form_name, $path) = icm_process_params($params);
+    list($model_pid, $form_name, $path) = Forms::expandParameters($params);
   }
   else {
     $model_pid = $form_state['post']['form']['model_pid'];
@@ -1257,7 +1243,7 @@ function icm_add_form_element_submit($form, &$form_state) {
  */
 function icm_edit_form_element(&$form_state, $params) {
   if (is_array($params)) {
-    list($model_pid, $form_name, $path) = icm_process_params($params);
+    list($model_pid, $form_name, $path) = Forms::expandParameters($params);
   }
   else {
     $model_pid = $form_state['post']['form']['model_pid'];
@@ -1278,12 +1264,12 @@ function icm_edit_form_element(&$form_state, $params) {
 function icm_edit_form_element_submit($form, &$form_state) {
   if (form_get_errors() !== NULL)
     return;
-  $model_pid = trim($form_state['values']['form']['model_pid']);
-  $form_name = trim($form_state['values']['form']['name']);
-  $type = trim($form_state['values']['form']['type']);
-  $path = trim($form_state['values']['form']['path']);
+  $model_pid = trim($form_state['values']['model_pid']);
+  $form_name = trim($form_state['values']['name']);
+  $type = trim($form_state['values']['type']);
+  $path = trim($form_state['values']['path']);
   $form_tree = Forms::createFromPID($model_pid);
-  $element_properties = $form_state['values']['form']['element_properties'][0];
+  $element_properties = $form_state['values']['element_properties'][0];
   if ($form_tree->editFormElement($type, $element_properties, $form_name, $path)) {
     echo 'success:' . t('Added a <b>%type_name</b> to <b>%form_name</b>.', array('%type_name' => $element_type, '%form_name' => $form_name));
     exit();
