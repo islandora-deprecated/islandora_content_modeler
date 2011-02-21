@@ -323,7 +323,7 @@ class Forms {
   private function findFormElementFromPath($form_name, $path = NULL) {
     $form = $this->getFormElement($form_name);
     $form_element = $form;
-    if ($path) {
+    if (isset($path)) {
       $path = explode(' ', $path);
       while (true) {
         $index = array_shift($path);
@@ -491,6 +491,8 @@ class Forms {
   public function editFormElement($type, $element_properties_form_values, $form_name, $path) {
     module_load_include('inc', 'islandora_content_modeler', 'includes/FormElementDocument');
     $form_element_document = new FormElementDocument($type, $element_properties_form_values);
+    $xml = $form_element_document->saveXML();
+    $xml .= ' ';
     $form_element = $this->findFormElementFromPath($form_name, $path);
     $result = $this->contentModel->editFormElement($form_element_document->documentElement, $form_element);
     return $result && $this->contentModel->saveToFedora();
@@ -516,7 +518,7 @@ class Forms {
             'tabpanel' => 'tabpanel',
             'textfield' => 'textfield',
             'textarea' => 'textarea',
-            'list' => 'list',
+            'set' => 'set',
             'select' => 'select',
             'checkbox' => 'checkbox',
           ),
@@ -601,6 +603,28 @@ class Forms {
   }
 
   /**
+   * Gets options as a set.
+   * 
+   * @param string $path
+   * @param DOMNode $node
+   * 
+   * @return array 
+   */
+  private function getOptions($path, $node = NULL) {
+    if (!$node) {
+      return NULL;
+    }
+    $xpath = new DOMXPath($node->ownerDocument);
+    $xpath->registerNamespace('cm', 'http://www.islandora.ca');
+    $result = $xpath->query($path, $node);
+    for($i = 0; $i < $result->length; $i++) {
+      $option= $result->item($i);
+      $options[] = $option->textContent;
+    }
+    return isset($options) ? implode(';', $options) : '';
+  }
+
+  /**
    * Tests if a element/attribute exists.
    *
    * @param string $path
@@ -622,33 +646,6 @@ class Forms {
       return TRUE;
     }
     return FALSE;
-  }
-
-  /**
-   *
-   * @param <type> $form_element
-   * @param <type> $tag_name
-   *
-   * @return
-   */
-  private function getElementValue($tag_name, $form_element = NULL) {
-    if ($form_element) {
-      $result = $form_element->getElementsByTagName($tag_name);
-      if ($result && $result->length == 1) {
-        return $result->item(0)->textContent;
-      }
-    }
-    return NULL;
-  }
-
-  private function getAttributeValue($tag_name, $attribute_name, $form_element = NULL) {
-    if ($form_element) {
-      $result = $form_element->getElementsByTagName($tag_name);
-      if ($result && $result->length == 1) {
-        return $result->item(0)->getAttribute($attribute_name);
-      }
-    }
-    return NULL;
   }
 
   /**
@@ -688,7 +685,7 @@ class Forms {
    * @return array
    *   The default form element properties.
    */
-  public function getDefaultPropertiesForm($node) {
+  public function getDefaultPropertiesForm($node = NULL) {
     return array(
       'title' => array(
         '#type' => 'textfield',
@@ -696,24 +693,24 @@ class Forms {
         '#size' => 30,
         '#required' => TRUE,
         '#description' => t('The title of the form element.'),
-        '#default_value' => $this->getElementValue('title', $node),
+        '#default_value' => $this->getValue('child::cm:title', $node),
       ),
       'description' => array(
         '#type' => 'textarea',
         '#title' => t('Description'),
-        '#rows' => 1,
-        '#cols' => 1,
+        '#rows' => 2,
+        '#cols' => 80,
         '#description' => t('The description of the form element.'),
-        '#default_value' => $this->getElementValue('description', $node),
+        '#default_value' => $this->getValue('child::cm:description', $node),
       ),
     );
   }
 
   private function getFormBuilderProperties($node = NULL) {
-    $element = $this->exists('//cm:element', $node);
-    $attribute = $this->exists('//cm:attribute', $node);
-    $xml = $this->exists('//cm:xml', $node);
-    $select_value = $element ? 'Element' : $attribute ? 'Attribute' : $xml ? 'XML' : NULL;
+    $element = $this->exists('child::cm:form_builder//cm:element', $node);
+    $attribute = $this->exists('child::cm:form_builder//cm:attribute', $node);
+    $xml = $this->exists('child::cm:form_builder//cm:xml', $node);
+    $select_value = $element ? 'Element' : ($attribute ? 'Attribute' : ($xml ? 'XML' : NULL));
     return array(
       'form_builder' => array(
         '#type' => 'fieldset',
@@ -723,19 +720,19 @@ class Forms {
           '#type' => 'textfield',
           '#title' => 'Path',
           '#description' => t('Path to this form element.'),
-          '#default_value' => $this->getValue('//cm:path', $node),
+          '#default_value' => $this->getValue('child::cm:form_builder//cm:path', $node),
         ),
         'full' => array(
           '#type' => 'checkbox',
           '#title' => t('Full Path?'),
           '#description' => t('Is path full? Or is run at its parents context?'),
-          '#default_value' => $this->getValue('//@full', $node) == 'true',
+          '#default_value' => $this->getValue('child::cm:form_builder//cm:path/@full', $node) == 'true',
         ),
         'parent_path' => array(
           '#type' => 'textfield',
           '#title' => 'Parent Path',
           '#description' => t('Path to the parent element of this form element.'),
-          '#default_value' => $this->getValue('//cm:parent_path', $node),
+          '#default_value' => $this->getValue('child::cm:form_builder//cm:parent_path', $node),
         ),
         'select' => array(
           '#type' => 'select',
@@ -752,24 +749,25 @@ class Forms {
           '#type' => 'textfield',
           '#title' => 'Element Name',
           '#description' => t('Element to create. Namespaces are allowed.'),
-          '#default_value' => $this->getValue('//cm:element', $node),
+          '#default_value' => $this->getValue('child::cm:form_builder//cm:element', $node),
         ),
         'attribute' => array(
           '#type' => 'textfield',
           '#title' => 'Attribute Name',
           '#description' => t('Attribute to create. Namespaces are allowed.'),
-          '#default_value' => $this->getValue('//cm:attribute', $node),
+          '#default_value' => $this->getValue('child::cm:form_builder//cm:attribute', $node),
         ),
         'xml' => array(
           '#type' => 'textarea',
           '#title' => 'XML',
           '#description' => t('A XML document fragment that will be created. It must have a root. Namespaces are allowed.'),
-          '#default_value' => $this->getValue('//cm:xml', $node),
+          '#default_value' => $this->getValue('child::cm:form_builder//cm:xml', $node),
         ),
         'require_value' => array(
           '#type' => 'checkbox',
           '#title' => t('Require Value?'),
           '#description' => t('Does this node require a value to be created?'),
+          '#default_value' => $this->getValue('child::cm:form_builder/cm:require_value', $node) == 'true',
         ),
       ),
     );
@@ -786,14 +784,14 @@ class Forms {
         '#type' => 'checkbox',
         '#title' => t('Required?'),
         '#description' => t('Is this form element required?'),
-        '#default_value' => $this->getElementValue('required', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:required', $form_element) == 'true',
       ),
       'default_value' => array(
         '#type' => 'textfield',
         '#title' => t('Default Value'),
         '#size' => 100,
         '#description' => t('Specify the default value for this textfield.'),
-        '#default_value' => $this->getElementValue('default_value', $form_element),
+        '#default_value' => $this->getValue('child::cm:default_value', $form_element),
       ),
     );
   }
@@ -809,7 +807,7 @@ class Forms {
         '#type' => 'checkbox',
         '#title' => t('Required?'),
         '#description' => t('Is this form element required?'),
-        '#default_value' => $this->getElementValue('required', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:required', $form_element) == 'true',
       ),
       'default_value' => array(
         '#type' => 'textarea',
@@ -817,7 +815,7 @@ class Forms {
         '#rows' => 1,
         '#cols' => 1,
         '#description' => t('Specify the default value for this textarea.'),
-        '#default_value' => $this->getElementValue('default_value', $form_element),
+        '#default_value' => $this->getValue('child::cm:default_value', $form_element),
       )
     );
   }
@@ -833,20 +831,20 @@ class Forms {
         '#type' => 'checkbox',
         '#title' => t('Required?'),
         '#description' => t('Is this form element required?'),
-        '#default_value' => $this->getElementValue('required', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:required', $form_element) == 'true',
       ),
       'options' => array(
-        '#type' => 'list',
+        '#type' => 'set',
         '#required' => TRUE,
         '#title' => t('Options'),
         '#description' => t('Specify the options.'),
-        '#default_value' => $this->getElementValue('options', $form_element),
+        '#default_value' => $this->getOptions('child::cm:options/child::*', $form_element),
       ),
       'ignoreFirstOption' => array(
         '#type' => 'checkbox',
         '#title' => t('Ignore First Option'),
         '#description' => t('Should the first option be ignored?'),
-        '#default_value' => $this->getAttributeValue('options', 'ignoreFirstOption', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:options/@ignoreFirstOption', $form_element) == 'true',
       )
     );
   }
@@ -856,19 +854,19 @@ class Forms {
    * @param Array $form_element
    * @return Array
    */
-  private function getListElementProperties($form_element) {
+  private function getSetElementProperties($form_element) {
     return array(
       'required' => array(
         '#type' => 'checkbox',
         '#title' => t('Required?'),
         '#description' => t('Is this form element required?'),
-        '#default_value' => $this->getElementValue('required', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:required', $form_element) == 'true',
       ),
       'default_value' => array(
-        '#type' => 'list',
+        '#type' => 'set',
         '#title' => t('Default Value'),
         '#description' => t('Specify the default value for this list.'),
-        '#default_value' => $this->getElementValue('default_value', $form_element),
+        '#default_value' => $this->getValue('child::cm:default_value', $form_element),
       )
     );
   }
@@ -883,13 +881,13 @@ class Forms {
         '#type' => 'checkbox',
         '#title' => t('Collapsible?'),
         '#description' => t('Indicates whether or not the fieldset can be collapsed with JavaScript. See #collapsed property.'),
-        '#default_value' => $this->getElementValue('collapsible', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:collapsible', $form_element) == 'true',
       ),
       'collapsed' => array(
         '#type' => 'checkbox',
         '#title' => t('Collapsed?'),
         '#description' => t('Indicates whether or not the fieldset is collapsed by default. See #collapsible property.'),
-        '#default_value' => $this->getElementValue('collapsed', $form_element) == 'true',
+        '#default_value' => $this->getValue('child::cm:collapsed', $form_element) == 'true',
       ),
       'content' => array(
         '#type' => 'hidden',
@@ -922,7 +920,7 @@ class Forms {
         '#title' => t('Return Value'),
         '#size' => 100,
         '#description' => t('Specify the return value for this checkbox.'),
-        '#default_value' => $this->getElementValue('return_value', $form_element),
+        '#default_value' => $this->getValue('child::cm:return_value', $form_element),
       ),
     );
   }
