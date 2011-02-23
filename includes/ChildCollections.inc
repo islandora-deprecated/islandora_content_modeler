@@ -57,7 +57,7 @@ class ChildCollections {
         $child_collection_policy = CollectionPolicy::loadFromCollection($child_pid);
         if ($child_collection_policy !== false) {
           $content = '<a href="#" class="collection_child" id="' . $child_pid . '">' . $child_pid . '</a> (<a href="#" class="collection_model" id="' . $model_pid . '">' . $model_pid . '</a>)';
-          $icon = create_icon(Image::Remove, AjaxAction::Form, 'icm_collection_purge', array($child_pid));
+          $icon = create_icon(Image::Remove, AjaxAction::Form, 'icm_collection_purge', array($child_pid), 'Delete');
           $branch->addChild($content, 'file', $icon);
         }
       }

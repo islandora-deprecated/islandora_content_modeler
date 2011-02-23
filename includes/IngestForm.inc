@@ -46,7 +46,7 @@ class IngestForm {
     $page = $attributes['page'];
     $hidden = $attributes['hide_file_chooser'] ? 'true' : 'false';
     $arguments = array('icm_model_edit_ingestForm', $this->modelPid, $dsid, $page, $hidden);
-    return create_icon(Image::Edit, AjaxAction::Form, 'icm_model_edit_ingestForm', $arguments);
+    return create_icon(Image::Edit, AjaxAction::Form, 'icm_model_edit_ingestForm', $arguments, 'Edit ingest form');
   }
 
   /**
@@ -58,14 +58,14 @@ class IngestForm {
    */
   private function getFormElementIcons($element, $first, $last) {
     $arguments = array($this->modelPid, $element['name']);
-    $icons = create_icon(Image::Remove, AjaxAction::Button, 'imc_model_remove_ingestFormElement', $arguments);
+    $icons = create_icon(Image::Remove, AjaxAction::Button, 'imc_model_remove_ingestFormElement', $arguments, 'Remove form element');
     if (!$first) {
-      $icons .= create_icon(Image::Up, AjaxAction::Button, 'icm_model_inc_ingestFormElement', $arguments);
+      $icons .= create_icon(Image::Up, AjaxAction::Button, 'icm_model_inc_ingestFormElement', $arguments, 'Move up');
     }
     if (!$last) {
-      $icons .= create_icon(Image::Down, AjaxAction::Button, 'icm_model_dec_ingestFormElement', $arguments);
+      $icons .= create_icon(Image::Down, AjaxAction::Button, 'icm_model_dec_ingestFormElement', $arguments. 'Move down');
     }
-    $icons .= create_icon(Image::Edit, AjaxAction::Form, 'icm_model_edit_ingestFormElement', $arguments);
+    $icons .= create_icon(Image::Edit, AjaxAction::Form, 'icm_model_edit_ingestFormElement', $arguments, 'Edit form element');
     return $icons;
   }
 

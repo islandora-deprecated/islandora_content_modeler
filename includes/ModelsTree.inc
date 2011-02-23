@@ -76,7 +76,7 @@ class ModelsTree {
         $content_model = ContentModel::loadFromModel($child_pid);
         if ($content_model !== false) {
           $title = "<a href='#' class='list_model' id='$child_pid'>$child_pid</a>";
-          $icon = create_icon(Image::Remove, AjaxAction::Form, 'icm_model_purge', array($child_pid));
+          $icon = create_icon(Image::Remove, AjaxAction::Form, 'icm_model_purge', array($child_pid), "Delete");
           $modelTree->addChild($title, 'file', $icon);
           $content_models_installed = true;
         }
@@ -139,7 +139,7 @@ class ModelsTree {
    *   ...
    */
   private function getTitleIcons() {
-    $icons = ' ' . create_icon(Image::Info, AjaxAction::Form, 'icm_model_rollback', array($this->contentModel->pid));
+    $icons = ' ' . create_icon(Image::Info, AjaxAction::Form, 'icm_model_rollback', array($this->contentModel->pid), 'Rollback to earlier version');
     $icons .= create_icon(Image::View, AjaxAction::Form, 'icm_display_rawXml', array('model', $this->contentModel->pid));
     return $icons;
   }

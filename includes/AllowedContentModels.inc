@@ -31,7 +31,7 @@ class AllowedContentModels {
     $branch = $collection_tree->addChild('Allowed Content Models', 'folder', $icon, $id);
     foreach ($content_models as $content_model) {
       $content = $content_model->name . ' (<a href="#" class="collection_model" id="' . $content_model->pid . '">' . $content_model->pid . '</a>)';
-      $icon = create_icon(Image::Remove, AjaxAction::Button, 'icm_collection_remove_cmodel', array($this->collectionPid, $content_model->pid));
+      $icon = create_icon(Image::Remove, AjaxAction::Button, 'icm_collection_remove_cmodel', array($this->collectionPid, $content_model->pid), 'Delete');
       $branch->addChild($content, 'file', $icon);
     }
   }

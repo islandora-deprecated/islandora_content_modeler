@@ -31,7 +31,7 @@ class MimeTypes {
     $branch = $model_tree->addChild('Mimetypes', 'folder', $icon);
     $mime_types = $this->contentModel->getMimeTypes();
     foreach ($mime_types as $type) {
-      $icon = create_icon(Image::Remove, AjaxAction::Button, 'icm_model_remove_mime', array($this->contentModel->pid, $type));
+      $icon = create_icon(Image::Remove, AjaxAction::Button, 'icm_model_remove_mime', array($this->contentModel->pid, $type), "Remove mimetype");
       $branch->addChild($type, 'file', $icon);
     }
   }

@@ -113,9 +113,9 @@ class CollectionsTree {
    *   ...
    */
   private function getTitleIcons() {
-    $icon = ' ' . create_icon(Image::Edit, AjaxAction::Form, 'icm_collection_edit', array($this->collectionPolicy->pid));
-    $icon .= create_icon(Image::Info, AjaxAction::Form, 'icm_collection_rollback', array($this->collectionPolicy->pid));
-    $icon .= create_icon(Image::View, AjaxAction::Form, 'icm_display_rawXml', array($this->collectionPolicy->pid));
+    $icon = ' ' . create_icon(Image::Edit, AjaxAction::Form, 'icm_collection_edit', array($this->collectionPolicy->pid), 'Edit RDF and staging');
+    $icon .= create_icon(Image::Info, AjaxAction::Form, 'icm_collection_rollback', array($this->collectionPolicy->pid), 'Rollback to earlier version');
+    $icon .= create_icon(Image::View, AjaxAction::Form, 'icm_display_rawXml', array($this->collectionPolicy->pid), 'View Raw XML');
     return $icon;
   }
 

@@ -31,7 +31,7 @@ class IngestRules {
    * @param TreeView $branch
    */
   private function renderIngestRule($id, $ingest_rule, $branch) {
-    $icon = create_icon(Image::Remove, AjaxAction::Button, 'icm_model_remove_ingestRule', array($this->modelPid), $id);
+    $icon = create_icon(Image::Remove, AjaxAction::Button, 'icm_model_remove_ingestRule', array($this->modelPid, $id), 'Remove ingest rule');
     $branch = $branch->addChild('Rule ' . $id, 'folder', $icon);
     $this->renderAppliesToFolder($id, $ingest_rule, $branch);
     $this->renderIngestMethods($id, $ingest_rule, $branch);

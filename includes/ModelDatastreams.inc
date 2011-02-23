@@ -80,7 +80,7 @@ class ModelDatastreams {
   private function renderDatastream($datastream, $branch) {
     $arguments = array($this->modelPid, $datastream);
     $title = $datastream . ($this->contentModel->displayInFieldSet($datastream) ? '(Display in Fieldset) ' : '');
-    $icons = create_icon(Image::Remove, AjaxAction::Button, 'icm_model_remove_ds', $arguments);
+    $icons = create_icon(Image::Remove, AjaxAction::Button, 'icm_model_remove_ds', $arguments, "Remove datastream");
     $icons .= create_icon(Image::View, AjaxAction::Button, 'icm_model_toggle_dsDisplay', $arguments);
     $branch = $branch->addChild($title, 'file', $icons);
     $this->renderDisplayMethods($datastream, $branch);

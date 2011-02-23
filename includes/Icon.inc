@@ -54,12 +54,15 @@ class AjaxAction {
  *   A callback for when a users clicks on this icon.
  * @param Array $arguments
  *   An array of strings that will be passed to the callback.
+ * @param string $title
+ *   Image title.
  *
  * @return String
  *   A String
  */
-function create_icon($icon, $ajax_action, $callback, $arguments = NULL) {
+function create_icon($icon, $ajax_action, $callback, $arguments = NULL, $title = NULL) {
   $arguments = is_array($arguments) ? implode(' ', $arguments) : '';
   $root = CONTENT_MODELER_ROOT;
-  return " <img src='$root/images/$icon' class='$ajax_action' id='$callback $arguments'/>";
+  $title = isset($title) ? "title='$title'" : '';
+  return " <img src='$root/images/$icon' class='$ajax_action' id='$callback $arguments' $title/>";
 }
