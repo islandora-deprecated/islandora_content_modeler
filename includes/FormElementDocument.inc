@@ -53,8 +53,10 @@ class FormElementDocument extends DOMDocument {
   private function setCommonElementProperties(&$root, &$values) {
     $title = $root->appendChild(new DOMElement('title'));
     $title->appendChild(new DOMText($values['title']));
-    $description = $root->appendChild(new DOMElement('description'));
-    $description->appendChild(new DOMText($values['description']));
+    if ($values['description'] != '') {
+      $description = $root->appendChild(new DOMElement('description'));
+      $description->appendChild(new DOMText($values['description']));
+    }
   }
 
   /**
@@ -70,7 +72,7 @@ class FormElementDocument extends DOMDocument {
     $create_element = $values['element'] != '';
     $create_attribute = $values['attribute'] != '';
     $create_xml = $values['xml'] != '';
-    if(!$create_element && !$create_attribute && !$create_xml) {
+    if (!$create_element && !$create_attribute && !$create_xml) {
       return;
     }
     $form_builder = $root->appendChild(new DOMElement('form_builder'));
@@ -78,11 +80,11 @@ class FormElementDocument extends DOMDocument {
     $path = $xpath->appendChild(new DOMElement('path'));
     $path->appendChild(new DOMText($values['path']));
     $path->setAttribute('full', $values['full'] ? 'true' : 'false');
-    if($values['full']) {
+    if ($values['full']) {
       $parent_path = $xpath->appendChild(new DOMElement('parent_path'));
       $parent_path->appendChild(new DOMText($values['parent_path']));
     }
-    if($create_element) {
+    if ($create_element) {
       $xml = $xpath->appendChild(new DOMElement('element'));
       $xml->appendChild(new DOMText($values['element']));
     }
@@ -94,8 +96,9 @@ class FormElementDocument extends DOMDocument {
       $xml = $xpath->appendChild(new DOMElement('xml'));
       $xml->appendChild(new DOMText($values['xml']));
     }
+    $value = ($values['require_value']) ? 'true' : 'false';
     $required = $form_builder->appendChild(new DOMElement('require_value'));
-    $required->appendChild(new DOMText($values['require_value'] ? 'true' : 'false'));
+    $required->appendChild(new DOMText($value));
   }
 
   /**
@@ -108,10 +111,14 @@ class FormElementDocument extends DOMDocument {
    *   properties.
    */
   private function setTextfieldElementProperties(&$root, &$values) {
-    $required = $root->appendChild(new DOMElement('required'));
-    $required->appendChild(new DOMText($values['required'] ? 'true' : 'false'));
-    $default_value = $root->appendChild(new DOMElement('default_value'));
-    $default_value->appendChild(new DOMText($values['default_value']));
+    if ($values['required']) {
+      $required = $root->appendChild(new DOMElement('required'));
+      $required->appendChild(new DOMText($values['required'] ? 'true' : 'false'));
+    }
+    if ($values['default_value']) {
+      $default_value = $root->appendChild(new DOMElement('default_value'));
+      $default_value->appendChild(new DOMText($values['default_value']));
+    }
   }
 
   /**
@@ -124,10 +131,14 @@ class FormElementDocument extends DOMDocument {
    *   properties.
    */
   private function setTextareaElementProperties(&$root, &$values) {
-    $required = $root->appendChild(new DOMElement('required'));
-    $required->appendChild(new DOMText($values['required'] ? 'true' : 'false'));
-    $default_value = $root->appendChild(new DOMElement('default_value'));
-    $default_value->appendChild(new DOMText($values['default_value']));
+    if ($values['required']) {
+      $required = $root->appendChild(new DOMElement('required'));
+      $required->appendChild(new DOMText($values['required'] ? 'true' : 'false'));
+    }
+    if ($values['default_value']) {
+      $default_value = $root->appendChild(new DOMElement('default_value'));
+      $default_value->appendChild(new DOMText($values['default_value']));
+    }
   }
 
   /**
@@ -160,11 +171,16 @@ class FormElementDocument extends DOMDocument {
    *   An array of submitted values, repersenting the form element's
    *   properties.
    */
-  private function setListElementProperties(&$root, &$values) {
-    $required = $root->appendChild(new DOMElement('required'));
-    $required->appendChild(new DOMText($values['required'] ? 'true' : 'false'));
-    $default_value = $root->appendChild(new DOMElement('default_value'));
-    $default_value->appendChild(new DOMText($values['default_value']));
+  private function setSetElementProperties(&$root, &$values) {
+    if ($values['required']) {
+      $value = ($values['required']) ? 'true' : 'false';
+      $required = $root->appendChild(new DOMElement('required'));
+      $required->appendChild(new DOMText($value));
+    }
+    if ($values['default_value'] != '') {
+      $default_value = $root->appendChild(new DOMElement('default_value'));
+      $default_value->appendChild(new DOMText($values['default_value']));
+    }
   }
 
   /**
@@ -177,10 +193,16 @@ class FormElementDocument extends DOMDocument {
    *   properties.
    */
   private function setFieldsetElementProperties(&$root, &$values) {
-    $collapsible = $root->appendChild(new DOMElement('collapsible'));
-    $collapsible->appendChild(new DOMText($values['collapsible'] ? 'true' : 'false'));
-    $collapsed = $root->appendChild(new DOMElement('collapsed'));
-    $collapsed->appendChild(new DOMText($values['collapsed'] ? 'true' : 'false'));
+    if ($values['collapsible']) {
+      $value = ($values['collapsible']) ? 'true' : 'false';
+      $collapsible = $root->appendChild(new DOMElement('collapsible'));
+      $collapsible->appendChild(new DOMText($value));
+    }
+    if ($values['collapsed']) {
+      $value = ($values['collapsed']) ? 'true' : 'false';
+      $collapsed = $root->appendChild(new DOMElement('collapsed'));
+      $collapsed->appendChild(new DOMText($value));
+    }
     $root->appendChild(new DOMElement('content'));
   }
 
@@ -194,6 +216,16 @@ class FormElementDocument extends DOMDocument {
    *   properties.
    */
   private function setTabpanelElementProperties(&$root, &$values) {
+    if ($values['collapsible']) {
+      $value = ($values['collapsible']) ? 'true' : 'false';
+      $collapsible = $root->appendChild(new DOMElement('collapsible'));
+      $collapsible->appendChild(new DOMText($value));
+    }
+    if ($values['collapsed']) {
+      $value = ($values['collapsed']) ? 'true' : 'false';
+      $collapsed = $root->appendChild(new DOMElement('collapsed'));
+      $collapsed->appendChild(new DOMText($value));
+    }
     $root->appendChild(new DOMElement('content'));
   }
 
@@ -207,8 +239,10 @@ class FormElementDocument extends DOMDocument {
    *   properties.
    */
   private function setCheckboxElementProperties(&$root, &$values) {
-    $return_value = $root->appendChild(new DOMElement('return_value'));
-    $return_value->appendChild(new DOMText($values['return_value']));
+    if ($values['return_value'] != '') {
+      $return_value = $root->appendChild(new DOMElement('return_value'));
+      $return_value->appendChild(new DOMText($values['return_value']));
+    }
   }
 
 }
