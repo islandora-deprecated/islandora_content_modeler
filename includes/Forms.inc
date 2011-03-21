@@ -711,6 +711,8 @@ class Forms {
     $attribute = $this->exists('child::cm:form_builder//cm:attribute', $node);
     $xml = $this->exists('child::cm:form_builder//cm:xml', $node);
     $select_value = $element ? 'Element' : ($attribute ? 'Attribute' : ($xml ? 'XML' : NULL));
+    $require_value = $this->getValue('child::cm:form_builder/cm:require_value', $node);
+    $require_value = isset($require_value) ? $require_value == 'true' : TRUE;
     return array(
       'form_builder' => array(
         '#type' => 'fieldset',
@@ -792,6 +794,13 @@ class Forms {
         '#size' => 100,
         '#description' => t('Specify the default value for this textfield.'),
         '#default_value' => $this->getValue('child::cm:default_value', $form_element),
+      ),
+      'autocomplete_path' => array(
+        '#type' => 'textfield',
+        '#title' => t('Auto Complete Path'),
+        '#size' => 100,
+        '#description' => t('Specify the autocomplete path for this textfield.'),
+        '#default_value' => $this->getValue('child::cm:autocomplete_path', $form_element),
       ),
     );
   }

@@ -119,6 +119,10 @@ class FormElementDocument extends DOMDocument {
       $default_value = $root->appendChild(new DOMElement('default_value'));
       $default_value->appendChild(new DOMText($values['default_value']));
     }
+    if ($values['autocomplete_path']) {
+      $autocomplete_path = $root->appendChild(new DOMElement('autocomplete_path'));
+      $autocomplete_path->appendChild(new DOMText($values['autocomplete_path']));
+    }
   }
 
   /**
