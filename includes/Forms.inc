@@ -921,7 +921,19 @@ class Forms {
       'content' => array(
         '#type' => 'hidden',
         '#default_value' => NULL,
-      )
+      ),
+      'collapsible' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Collapsible?'),
+        '#description' => t('Indicates whether or not the tabpanel can be collapsed. See #collapsed property.'),
+        '#default_value' => $this->getValue('child::cm:collapsible', $form_element) == 'true',
+      ),
+      'collapsed' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Collapsed?'),
+        '#description' => t('Indicates whether or not the tabpanel is collapsed by default.'),
+        '#default_value' => $this->getValue('child::cm:collapsed', $form_element) == 'true',
+      ),
     );
   }
 
