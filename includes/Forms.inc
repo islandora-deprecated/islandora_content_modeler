@@ -876,7 +876,14 @@ class Forms {
         '#title' => t('Default Value'),
         '#description' => t('Specify the default value for this list.'),
         '#default_value' => $this->getValue('child::cm:default_value', $form_element),
-      )
+      ),
+      'autocomplete_path' => array(
+        '#type' => 'textfield',
+        '#title' => t('Auto Complete Path'),
+        '#size' => 100,
+        '#description' => t('Specify the autocomplete path for this element.'),
+        '#default_value' => $this->getValue('child::cm:autocomplete_path', $form_element),
+      ),
     );
   }
 
