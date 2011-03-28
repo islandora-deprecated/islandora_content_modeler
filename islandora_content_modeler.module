@@ -44,8 +44,14 @@ function islandora_content_modeler_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/AjaxHelperMethods.inc',
   );
-  $items['admin/content/modeler/ajax/getForms'] = array(
-    'page callback' => 'AjaxHelperMethods::getForms',
+  $items['admin/content/modeler/ajax/getDocuments'] = array(
+    'page callback' => 'AjaxHelperMethods::getDocuments',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/AjaxHelperMethods.inc',
+  );
+  $items['admin/content/modeler/ajax/getBuilders'] = array(
+    'page callback' => 'AjaxHelperMethods::getBuilders',
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/AjaxHelperMethods.inc',

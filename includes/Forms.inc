@@ -617,8 +617,8 @@ class Forms {
     $xpath = new DOMXPath($node->ownerDocument);
     $xpath->registerNamespace('cm', 'http://www.islandora.ca');
     $result = $xpath->query($path, $node);
-    for($i = 0; $i < $result->length; $i++) {
-      $option= $result->item($i);
+    for ($i = 0; $i < $result->length; $i++) {
+      $option = $result->item($i);
       $options[] = $option->textContent;
     }
     return isset($options) ? implode(';', $options) : '';
@@ -1006,6 +1006,10 @@ function icm_add_form(&$form_state, $params) {
     '#type' => 'fieldset',
     '#title' => t('Add a form to <b>%model_pid</b>', array('%model_pid' => $model_pid)),
     '#tree' => TRUE,
+    'model_pid' => array(
+      '#type' => 'hidden',
+      '#value' => $model_pid
+    ),
     'name' => array(
       '#type' => 'textfield',
       '#title' => t('Name'),
@@ -1014,53 +1018,92 @@ function icm_add_form(&$form_state, $params) {
       '#description' => t('The name of the form.'),
       '#element_validate' => array('icm_validate_form_name'),
     ),
-    'model_pid' => array(
-      '#type' => 'hidden',
-      '#value' => $model_pid
+    'dsid' => array(
+      '#type' => 'textfield',
+      '#title' => t('Datastream Identifier'),
+      '#size' => 30,
+      '#maxlength' => 64,
+      '#required' => TRUE,
+      '#description' => t('The datastream ID that will store the output from this method.'),
+    ),
+    'ingest_module' => array(
+      '#type' => 'select',
+      '#title' => t('Ingest Module'),
+      '#attributes' => array('class' => 'form-builder'),
+      '#element_validate' => array('icm_module_validate'),
+      '#options' => icm_get_modules(),
+      '#required' => FALSE,
+      '#description' => t('The name of the module containing the ingest form builder file/class.'),
+    ),
+    'ingest_filename' => array(
+      '#type' => 'select',
+      '#title' => t('Ingest File'),
+      '#element_validate' => array('icm_filename_validate'),
+      '#required' => FALSE,
+      '#description' => t('The relative path of the file containing the ingest form builder class.'),
+    ),
+    'ingest_class' => array(
+      '#type' => 'select',
+      '#title' => t('Ingest Class'),
+      '#element_validate' => array('icm_class_validate'),
+      '#required' => FALSE,
+      '#description' => t('The name of the ingest form builder class.'),
+    ),
+    'edit_module' => array(
+      '#type' => 'select',
+      '#title' => t('Edit Module'),
+      '#attributes' => array('class' => 'form-builder'),
+      '#element_validate' => array('icm_module_validate'),
+      '#options' => icm_get_modules(),
+      '#required' => FALSE,
+      '#description' => t('The name of the module containing the edit form builder file/class.'),
+    ),
+    'edit_filename' => array(
+      '#type' => 'select',
+      '#title' => t('Edit File'),
+      '#element_validate' => array('icm_filename_validate'),
+      '#required' => FALSE,
+      '#description' => t('The relative path of the file containing the edit form builder class.'),
+    ),
+    'edit_class' => array(
+      '#type' => 'select',
+      '#title' => t('Edit Class'),
+      '#element_validate' => array('icm_class_validate'),
+      '#required' => FALSE,
+      '#description' => t('The name of the edit form builder class.'),
+    ),
+    'document_module' => array(
+      '#type' => 'select',
+      '#title' => t('Document Module'),
+      '#attributes' => array('class' => 'form-builder'),
+      '#element_validate' => array('icm_module_validate'),
+      '#options' => icm_get_modules(),
+      '#required' => TRUE,
+      '#description' => t('The name of the module containing the metadata document file.'),
+    ),
+    'document_filename' => array(
+      '#type' => 'select',
+      '#title' => t('Document File'),
+      '#element_validate' => array('icm_filename_validate'),
+      '#required' => TRUE,
+      '#description' => t('The relative path of the file containing the metatdata document generator class.'),
+    ),
+    'document_class' => array(
+      '#type' => 'select',
+      '#title' => t('Document Class'),
+      '#element_validate' => array('icm_class_validate'),
+      '#required' => TRUE,
+      '#description' => t('The name of the metadata document generator class.'),
+    ),
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save')
+    ),
+    'cancel' => array(
+      '#type' => 'button',
+      '#value' => t('Cancel'),
+      '#id' => 'cancel'
     )
-  );
-
-  $form['form']['module'] = array(
-    '#type' => 'select',
-    '#title' => t('Module'),
-    '#attributes' => array('class' => 'form-builder'),
-    '#element_validate' => array('icm_module_validate'),
-    '#options' => icm_get_modules(),
-    '#required' => TRUE,
-    '#description' => t('The name of the module containing the plugin file.'),
-  );
-
-  $form['form']['filename'] = array(
-    '#type' => 'textfield',
-    '#title' => t('File'),
-    '#element_validate' => array('icm_filename_validate'),
-    '#required' => TRUE,
-    '#description' => t('The relative path of the file containing the ingest method class/method.'),
-  );
-  $form['form']['class'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Class'),
-    '#element_validate' => array('icm_class_validate'),
-    '#required' => TRUE,
-    '#size' => 30,
-    '#description' => t('The name of the ingest method class.'),
-  );
-  $form['form']['dsid'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Datastream Identifier'),
-    '#size' => 30,
-    '#maxlength' => 64,
-    '#required' => TRUE,
-    '#description' => t('The datastream ID that will store the output from this method.'),
-  );
-  $form['form']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save')
-  );
-  $form['form']['cancel'] = array(
-    '#type' => 'button',
-    '#value' => t('Cancel'),
-    '#id' => 'cancel'
   );
   return $form;
 }
@@ -1075,18 +1118,38 @@ function icm_add_form_submit($form, &$form_state) {
     return;
   $model_pid = trim($form_state['values']['form']['model_pid']);
   $form_name = $form_state['values']['form']['name'];
-  $module = $form_state['values']['form']['module'];
-  $file = $form_state['values']['form']['filename'];
-  $class = $form_state['values']['form']['class'];
   $dsid = $form_state['values']['form']['dsid'];
+  $ingest_module = $form_state['values']['form']['ingest_module'];
+  $ingest_file = $form_state['values']['form']['ingest_filename'];
+  $ingest_class = $form_state['values']['form']['ingest_class'];
+  $edit_module = $form_state['values']['form']['edit_module'];
+  $edit_file = $form_state['values']['form']['edit_filename'];
+  $edit_class = $form_state['values']['form']['edit_class'];
+  $document_module = $form_state['values']['form']['document_module'];
+  $document_file = $form_state['values']['form']['document_filename'];
+  $document_class = $form_state['values']['form']['document_class'];
+
   $document = new DOMDocument();
   $element = $document->createElement('form');
   $document->appendChild($element);
   $element->setAttribute('name', $form_name);
-  $element->setAttribute('module', $module);
-  $element->setAttribute('file', $file);
-  $element->setAttribute('class', $class);
   $element->setAttribute('dsid', $dsid);
+  $element->setAttribute('document_module', $document_module);
+  $element->setAttribute('document_file', $document_file);
+  $element->setAttribute('document_class', $document_class);
+
+  if(trim($ingest_module) != '' && trim($ingest_file) != '' && trim($ingest_class) != '') {
+    $element->setAttribute('ingest_module', $ingest_module);
+    $element->setAttribute('ingest_file', $ingest_file);
+    $element->setAttribute('ingest_class', $ingest_class);
+  }
+
+  if(trim($edit_module) != '' && trim($edit_file) != '' && trim($edit_class) != '') {
+    $element->setAttribute('edit_module', $edit_module);
+    $element->setAttribute('edit_file', $edit_file);
+    $element->setAttribute('edit_class', $edit_class);
+  }
+
   $form_tree = Forms::createFromPID($model_pid);
   if ($form_tree->addForm($document->documentElement)) {
     echo 'success:' . t('Added form <b>%name</b> to model <b>%model_pid</b>.', array('%name' => $form_name, '%model_pid' => $model_pid));
@@ -1117,15 +1180,6 @@ function icm_edit_form(&$form_state, $params) {
     '#type' => 'fieldset',
     '#title' => t('Edit form <b>%name</b> from model <b>$model_pid</b>', array('%name' => $form_name, '%model_pid' => $model_pid)),
     '#tree' => TRUE,
-    'name' => array(
-      '#type' => 'textfield',
-      '#title' => t('Name'),
-      '#size' => 30,
-      '#required' => TRUE,
-      '#description' => t('The new name of the form.'),
-      '#element_validate' => array('icm_validate_form_name_edit'),
-      '#default_value' => $form_name,
-    ),
     'old_name' => array(
       '#type' => 'hidden',
       '#value' => $form_name,
@@ -1133,52 +1187,101 @@ function icm_edit_form(&$form_state, $params) {
     'model_pid' => array(
       '#type' => 'hidden',
       '#value' => $model_pid,
+    ),
+    'name' => array(
+      '#type' => 'textfield',
+      '#title' => t('Name'),
+      '#size' => 30,
+      '#required' => TRUE,
+      '#description' => t('The name of the form.'),
+      '#element_validate' => array('icm_validate_form_name'),
+    ),
+    'dsid' => array(
+      '#type' => 'textfield',
+      '#title' => t('Datastream Identifier'),
+      '#size' => 30,
+      '#maxlength' => 64,
+      '#required' => TRUE,
+      '#description' => t('The datastream ID that will store the output from this method.'),
+    ),
+    'ingest_module' => array(
+      '#type' => 'select',
+      '#title' => t('Ingest Module'),
+      '#attributes' => array('class' => 'form-builder'),
+      '#element_validate' => array('icm_module_validate'),
+      '#options' => icm_get_modules(),
+      '#required' => TRUE,
+      '#description' => t('The name of the module containing the ingest form builder file/class.'),
+    ),
+    'ingest_filename' => array(
+      '#type' => 'select',
+      '#title' => t('Ingest File'),
+      '#element_validate' => array('icm_filename_validate'),
+      '#required' => TRUE,
+      '#description' => t('The relative path of the file containing the ingest form builder class.'),
+    ),
+    'ingest_class' => array(
+      '#type' => 'select',
+      '#title' => t('Ingest Class'),
+      '#element_validate' => array('icm_class_validate'),
+      '#required' => TRUE,
+      '#description' => t('The name of the ingest form builder class.'),
+    ),
+    'edit_module' => array(
+      '#type' => 'select',
+      '#title' => t('Edit Module'),
+      '#attributes' => array('class' => 'form-builder'),
+      '#element_validate' => array('icm_module_validate'),
+      '#options' => icm_get_modules(),
+      '#required' => TRUE,
+      '#description' => t('The name of the module containing the edit form builder file/class.'),
+    ),
+    'edit_filename' => array(
+      '#type' => 'select',
+      '#title' => t('Edit File'),
+      '#element_validate' => array('icm_filename_validate'),
+      '#required' => TRUE,
+      '#description' => t('The relative path of the file containing the edit form builder class.'),
+    ),
+    'edit_class' => array(
+      '#type' => 'select',
+      '#title' => t('Edit Class'),
+      '#element_validate' => array('icm_class_validate'),
+      '#required' => TRUE,
+      '#description' => t('The name of the edit form builder class.'),
+    ),
+    'document_module' => array(
+      '#type' => 'select',
+      '#title' => t('Document Module'),
+      '#attributes' => array('class' => 'form-builder'),
+      '#element_validate' => array('icm_module_validate'),
+      '#options' => icm_get_modules(),
+      '#required' => TRUE,
+      '#description' => t('The name of the module containing the metadata document file.'),
+    ),
+    'document_filename' => array(
+      '#type' => 'select',
+      '#title' => t('Document File'),
+      '#element_validate' => array('icm_filename_validate'),
+      '#required' => TRUE,
+      '#description' => t('The relative path of the file containing the metatdata document generator class.'),
+    ),
+    'document_class' => array(
+      '#type' => 'select',
+      '#title' => t('Document Class'),
+      '#element_validate' => array('icm_class_validate'),
+      '#required' => TRUE,
+      '#description' => t('The name of the metadata document generator class.'),
+    ),
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save')
+    ),
+    'cancel' => array(
+      '#type' => 'button',
+      '#value' => t('Cancel'),
+      '#id' => 'cancel'
     )
-  );
-  $form['form']['module'] = array(
-    '#type' => 'select',
-    '#title' => t('Module'),
-    '#attributes' => array('class' => 'form-builder'),
-    '#element_validate' => array('icm_module_validate'),
-    '#options' => icm_get_modules(),
-    '#default_value' => $form_element->getAttribute('module'),
-    '#required' => TRUE,
-    '#description' => t('The name of the module containing the plugin file.'),
-  );
-  $form['form']['filename'] = array(
-    '#type' => 'textfield',
-    '#title' => t('File'),
-    '#element_validate' => array('icm_filename_validate'),
-    '#default_value' => $form_element->getAttribute('file'),
-    '#required' => TRUE,
-    '#description' => t('The relative path of the file containing the ingest method class/method.'),
-  );
-  $form['form']['class'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Class'),
-    '#element_validate' => array('icm_class_validate'),
-    '#default_value' => $form_element->getAttribute('class'),
-    '#required' => TRUE,
-    '#size' => 30,
-    '#description' => t('The name of the ingest method class.'),
-  );
-  $form['form']['dsid'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Datastream Identifier'),
-    '#size' => 30,
-    '#maxlength' => 64,
-    '#default_value' => $form_element->getAttribute('dsid'),
-    '#required' => TRUE,
-    '#description' => t('The datastream ID that will store the output from this method.'),
-  );
-  $form['form']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save')
-  );
-  $form['form']['cancel'] = array(
-    '#type' => 'button',
-    '#value' => t('Cancel'),
-    '#id' => 'cancel'
   );
   return $form;
 }
@@ -1194,18 +1297,38 @@ function icm_edit_form_submit($form, &$form_state) {
   $model_pid = trim($form_state['values']['form']['model_pid']);
   $old_name = $form_state['values']['form']['old_name'];
   $form_name = $form_state['values']['form']['name'];
-  $module = $form_state['values']['form']['module'];
-  $file = $form_state['values']['form']['filename'];
-  $class = $form_state['values']['form']['class'];
   $dsid = $form_state['values']['form']['dsid'];
+  $ingest_module = $form_state['values']['form']['ingest_module'];
+  $ingest_file = $form_state['values']['form']['ingest_filename'];
+  $ingest_class = $form_state['values']['form']['ingest_class'];
+  $edit_module = $form_state['values']['form']['edit_module'];
+  $edit_file = $form_state['values']['form']['edit_filename'];
+  $edit_class = $form_state['values']['form']['edit_class'];
+  $document_module = $form_state['values']['form']['document_module'];
+  $document_file = $form_state['values']['form']['document_filename'];
+  $document_class = $form_state['values']['form']['document_class'];
+
   $document = new DOMDocument();
   $element = $document->createElement('form');
   $document->appendChild($element);
   $element->setAttribute('name', $form_name);
-  $element->setAttribute('module', $module);
-  $element->setAttribute('file', $file);
-  $element->setAttribute('class', $class);
   $element->setAttribute('dsid', $dsid);
+  $element->setAttribute('document_module', $document_module);
+  $element->setAttribute('document_file', $document_file);
+  $element->setAttribute('document_class', $document_class);
+  
+  if(trim($ingest_module) != '' && trim($ingest_file) != '' && trim($ingest_class) != '') {
+    $element->setAttribute('ingest_module', $ingest_module);
+    $element->setAttribute('ingest_file', $ingest_file);
+    $element->setAttribute('ingest_class', $ingest_class);
+  }
+
+  if(trim($edit_module) != '' && trim($edit_file) != '' && trim($edit_class) != '') {
+    $element->setAttribute('edit_module', $edit_module);
+    $element->setAttribute('edit_file', $edit_file);
+    $element->setAttribute('edit_class', $edit_class);
+  }
+
   $content_model = ContentModel::loadFromModel($model_pid);
   if ($content_model) {
     if ($content_model->editForm($old_name, $document->documentElement) && $content_model->saveToFedora()) {

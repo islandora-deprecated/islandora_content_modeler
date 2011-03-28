@@ -603,6 +603,42 @@ class AjaxHelperMethods {
     exit();
   }
 
+  public static function getDocuments() {
+    echo '<option></option>';
+    $plugin_path = drupal_get_path('module', $_GET['module']);
+    if (!$plugin_path) {
+      exit();
+    }
+    $plugin_path.='/documents';
+    $files = array('');
+    if (is_dir($plugin_path) && ($dir = opendir($plugin_path)) !== false) {
+      while (($file = readdir($dir)) !== false) {
+        if (preg_match('/\.inc$/', $file)) {
+          echo '<option ' . (isset($_GET['file']) && $_GET['file'] == 'documents/' . $file ? 'selected="selected"' : '') . '>documents/' . $file . '</option>';
+        }
+      }
+    }
+    exit();
+  }
+
+  public static function getBuilders() {
+    echo '<option></option>';
+    $plugin_path = drupal_get_path('module', $_GET['module']);
+    if (!$plugin_path) {
+      exit();
+    }
+    $plugin_path.='/builders';
+    $files = array('');
+    if (is_dir($plugin_path) && ($dir = opendir($plugin_path)) !== false) {
+      while (($file = readdir($dir)) !== false) {
+        if (preg_match('/\.inc$/', $file)) {
+          echo '<option ' . (isset($_GET['file']) && $_GET['file'] == 'builders/' . $file ? 'selected="selected"' : '') . '>builders/' . $file . '</option>';
+        }
+      }
+    }
+    exit();
+  }
+
   /**
    * Returns html options for a select box.
    * The options consist of classes within the specified plugine file.

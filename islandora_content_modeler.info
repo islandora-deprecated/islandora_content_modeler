@@ -1,6 +1,6 @@
 ; $Id$
 name = Islandora Content Modeler
-dependencies[] = fedora_repository
+dependencies[] = fedora_repository jquery_update
 description = Allows you to manage and build content models for Islandora/Fedora.
 package = Fedora Repository
 core = 6.x

@@ -27,7 +27,12 @@ function showNodeCreationType(value) {
 }
 
 $(document).ready(function() {
-    $('#edit-element-properties-0-form-builder-full').live('change', function() {
+    var elements = {
+        full: '#edit-element-properties-0-form-builder-full',
+        select: '#edit-element-properties-0-form-builder-select'
+    };
+
+    $(elements.full).live('change', function() {
         if($(this).attr('checked')) {
             showElement('parent-path');
         }
@@ -35,13 +40,13 @@ $(document).ready(function() {
             hideAndClearElement('parent-path');
         }
     });
-    $('#edit-element-properties-0-form-builder-select').live('change', function() {
+    $(elements.select).live('change', function() {
         showNodeCreationType($(this).val());
     });
     $("#ajaxForm").ajaxComplete(function(event, request, settings) {
-        if($('#edit-element-properties-0-form-builder-full').attr('checked') == false) {
+        if($(elements.full).attr('checked') == false) {
             hideAndClearElement('parent-path');
         }
-        showNodeCreationType($('#edit-element-properties-0-form-builder-select').val());
+        showNodeCreationType($(elements.select).val());
     });
 });

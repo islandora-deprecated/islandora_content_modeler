@@ -57,28 +57,47 @@ $(document).ready(function () {
         $('#collection_crumbs').html(content);
     }
 
+    function setFormCallbacks(handler, callback) {
+        $(handler.module).change(function () {
+            $.get('modeler/ajax/' + callback + '/', {
+                module: $(handler.module).val()
+            }, function (data) {
+                $(handler.filename).html(data);
+            });
+            $(handler.classname).html('');
+        });
+        $(handler.filename).change(function () {
+            $.get('modeler/ajax/getClasses/', {
+                module: $(handler.module).val(),
+                file: $(handler.filename).val(),
+                className:  $(handler.classname).val()
+            },
+            function (data) {
+                $(handler.classname).html(data);
+            });
+        });
+    }
+
     function handleForm()
     {
-        if($('#edit-form-module').hasClass('form-builder')) {
-            $('#edit-form-module ').change(function () {
-                $.get('modeler/ajax/getForms/', {
-                    module: $('#edit-form-module').val()
-                }, function (data) {
-                    $('#edit-form-filename-select').html(data);
-                });
-                $('#edit-form-class-select, #edit-form-method-select, #edit-form-handler-select').html('');
-            });
+        var document = {
+            module: '#edit-form-document-module',
+            filename: '#edit-form-document-filename',
+            classname: '#edit-form-document-class'
         }
-        else {
-            $('#edit-form-module').change(function () {
-                $.get('modeler/ajax/getFiles/', {
-                    module: $('#edit-form-module').val()
-                }, function (data) {
-                    $('#edit-form-filename-select').html(data);
-                });
-                $('#edit-form-class-select, #edit-form-method-select, #edit-form-handler-select').html('');
-            });
+        var ingest = {
+            module: '#edit-form-ingest-module',
+            filename: '#edit-form-ingest-filename',
+            classname: '#edit-form-ingest-class'
         }
+        var edit = {
+            module: '#edit-form-edit-module',
+            filename: '#edit-form-edit-filename',
+            classname: '#edit-form-edit-class'
+        }
+        setFormCallbacks(document, 'getDocuments');
+        setFormCallbacks(ingest, 'getBuilders');
+        setFormCallbacks(edit, 'getBuilders');
 
         $('.form-item #edit-form-filename').hide();
         $('.form-item #edit-form-filename').before('<select id="edit-form-filename-select"></select>');
