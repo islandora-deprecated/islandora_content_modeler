@@ -3,5 +3,5 @@ name = Islandora Content Modeler
 dependencies[] = fedora_repository
 description = Allows you to manage and build content models for Islandora/Fedora.
 package = Fedora Repository
-version = 6.1dev
+version = 6.x-11.1.0
 core = 6.x
